@@ -101,8 +101,22 @@ export default function Profile() {
           </Card>
 
           {/* Actions */}
-          <Card className="p-6 border-0">
+          <Card className="p-6 border-0 space-y-3">
             <h2 className="text-xl font-semibold mb-4">Account</h2>
+            <Button
+              variant="outline"
+              className="w-full h-12"
+              onClick={() => navigate('/settings')}
+            >
+              Settings
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full h-12"
+              onClick={() => navigate('/admin')}
+            >
+              Admin Panel
+            </Button>
             <Button
               variant="destructive"
               className="w-full h-12"
