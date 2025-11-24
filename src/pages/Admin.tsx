@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
+import { BottomNav } from '@/components/BottomNav';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -183,6 +184,8 @@ export default function Admin() {
           </div>
         </motion.div>
       </div>
+
+      <BottomNav />
     </div>
   );
 }

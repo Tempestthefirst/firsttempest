@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Header } from '@/components/Header';
+import { BackButton } from '@/components/BackButton';
+import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -83,6 +85,7 @@ export default function MoneyRooms() {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+        <BackButton to="/" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -245,6 +248,8 @@ export default function MoneyRooms() {
           </Tabs>
         </motion.div>
       </div>
+
+      <BottomNav />
     </div>
   );
 }
