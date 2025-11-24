@@ -24,6 +24,7 @@ export default function Dashboard() {
       type: 'topup',
       amount,
       description: 'Account top-up',
+      status: 'confirmed',
     });
     toast.success(`Added $${amount} to your balance`);
   };
@@ -40,6 +41,7 @@ export default function Dashboard() {
       type: 'send',
       amount: -amount,
       description: 'Sent to friend',
+      status: 'confirmed',
     });
     toast.success(`Sent $${amount}`);
   };
@@ -52,6 +54,7 @@ export default function Dashboard() {
       type: 'receive',
       amount,
       description: 'Received from friend',
+      status: 'confirmed',
     });
     toast.success(`Received $${amount}`);
   };

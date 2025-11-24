@@ -61,7 +61,7 @@ export default function MoneyRooms() {
     setActiveTab('my-rooms');
   };
 
-  const handleJoinRoom = (e: React.FormEvent) => {
+  const handleJoinRoom = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!joinRoomId.trim()) {
@@ -69,9 +69,10 @@ export default function MoneyRooms() {
       return;
     }
 
-    const room = joinRoom(joinRoomId.toUpperCase());
+    const room = await joinRoom(joinRoomId.toUpperCase());
     if (room) {
-      navigate(`/rooms/${room.id}`);
+      toast.success(`Joined room: ${room.name}`);
+      navigate(`/room/${room.id}`);
     } else {
       toast.error('Room not found');
     }

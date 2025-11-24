@@ -4,12 +4,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useStore } from "@/store/useStore";
+import { useEffect } from "react";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import MoneyRooms from "./pages/MoneyRooms";
 import RoomDetail from "./pages/RoomDetail";
 import Transactions from "./pages/Transactions";
 import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,7 +23,33 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => {
-  const { isAuthenticated } = useStore();
+  const { isAuthenticated, checkRoomUnlocks } = useStore();
+
+  // Auto-check room unlocks every 15 seconds
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      checkRoomUnlocks();
+    }, 15000);
+
+    // Also check on visibility change (when user returns to tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkRoomUnlocks();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Initial check
+    checkRoomUnlocks();
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isAuthenticated, checkRoomUnlocks]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -44,7 +73,7 @@ const App = () => {
               }
             />
             <Route
-              path="/rooms"
+              path="/money-rooms"
               element={
                 <ProtectedRoute>
                   <MoneyRooms />
@@ -52,7 +81,7 @@ const App = () => {
               }
             />
             <Route
-              path="/rooms/:roomId"
+              path="/room/:id"
               element={
                 <ProtectedRoute>
                   <RoomDetail />
@@ -72,6 +101,22 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <Admin />
                 </ProtectedRoute>
               }
             />
