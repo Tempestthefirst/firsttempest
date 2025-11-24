@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Header } from '@/components/Header';
+import { BackButton } from '@/components/BackButton';
+import { BottomNav } from '@/components/BottomNav';
 import { Card } from '@/components/ui/card';
 import { TransactionCard } from '@/components/TransactionCard';
 import { Receipt } from 'lucide-react';
@@ -13,10 +15,13 @@ export default function Transactions() {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+        <BackButton to="/" />
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="mt-6"
         >
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center">
@@ -52,6 +57,8 @@ export default function Transactions() {
           </div>
         </motion.div>
       </div>
+
+      <BottomNav />
     </div>
   );
 }

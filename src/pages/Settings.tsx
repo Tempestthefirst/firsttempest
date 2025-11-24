@@ -2,14 +2,16 @@ import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
+import { BottomNav } from '@/components/BottomNav';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Settings as SettingsIcon, Bell, Lock, Palette, Database, User } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Lock, Palette, Database, User, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -20,12 +22,19 @@ import {
 } from '@/components/ui/dialog';
 
 export default function Settings() {
-  const { user, settings, updateSettings, seedDemo, clearData } = useStore();
+  const { user, settings, updateSettings, seedDemo, clearData, logout } = useStore();
+  const navigate = useNavigate();
   const [newName, setNewName] = useState(user?.name || '');
   const [newAvatar, setNewAvatar] = useState(user?.avatar || '');
   const [showClearDialog, setShowClearDialog] = useState(false);
 
   if (!user) return null;
+
+  const handleLogout = () => {
+    logout();
+    toast.success('Logged out successfully');
+    navigate('/');
+  };
 
   const handleSeedDemo = () => {
     seedDemo();
@@ -49,7 +58,7 @@ export default function Settings() {
       <Header />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
-        <BackButton to="/profile" />
+        <BackButton to="/" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -190,7 +199,7 @@ export default function Settings() {
                 <div>
                   <Label htmlFor="dark-mode">Dark Mode</Label>
                   <p className="text-sm text-muted-foreground">
-                    Toggle dark theme (coming soon)
+                    Toggle between light and dark theme
                   </p>
                 </div>
                 <Switch
@@ -198,11 +207,27 @@ export default function Settings() {
                   checked={settings.darkMode}
                   onCheckedChange={(checked) => {
                     updateSettings({ darkMode: checked });
-                    toast.info('Dark mode coming soon!');
+                    toast.success(checked ? 'Dark mode enabled' : 'Light mode enabled');
                   }}
                 />
               </div>
             </div>
+          </Card>
+
+          {/* Account Actions */}
+          <Card className="p-6 mb-4 border-0">
+            <div className="flex items-center gap-2 mb-4">
+              <LogOut className="w-5 h-5 text-destructive" />
+              <h2 className="text-lg font-semibold">Account Actions</h2>
+            </div>
+            <Button 
+              variant="destructive" 
+              onClick={handleLogout}
+              className="w-full"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
           </Card>
 
           {/* Demo Controls */}
@@ -247,6 +272,8 @@ export default function Settings() {
           </Card>
         </motion.div>
       </div>
+
+      <BottomNav />
     </div>
   );
 }

@@ -2,6 +2,8 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
 import { Header } from '@/components/Header';
+import { BackButton } from '@/components/BackButton';
+import { BottomNav } from '@/components/BottomNav';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -34,10 +36,13 @@ export default function Profile() {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+        <BackButton to="/" />
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="mt-6"
         >
           {/* Profile Header */}
           <Card className="p-6 mb-6 border-0 gradient-primary text-white relative overflow-hidden">
@@ -128,6 +133,8 @@ export default function Profile() {
           </Card>
         </motion.div>
       </div>
+
+      <BottomNav />
     </div>
   );
 }
