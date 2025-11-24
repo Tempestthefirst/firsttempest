@@ -126,15 +126,19 @@ export default function Admin() {
                 <div className="mb-4">
                   <p className="text-sm font-medium mb-2">Contributions:</p>
                   <div className="space-y-1 text-sm">
-                    {room.contributions.map((contrib) => (
-                      <div
-                        key={contrib.id}
-                        className="flex items-center justify-between p-2 bg-muted/50 rounded"
-                      >
-                        <span>User: {contrib.userId}</span>
-                        <span className="font-medium">₦{contrib.amount}</span>
-                      </div>
-                    ))}
+                    {room.contributions && room.contributions.length > 0 ? (
+                      room.contributions.map((contrib) => (
+                        <div
+                          key={contrib.id}
+                          className="flex items-center justify-between p-2 bg-muted/50 rounded"
+                        >
+                          <span>User: {contrib.userId}</span>
+                          <span className="font-medium">₦{contrib.amount}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-muted-foreground text-sm">No contributions yet</p>
+                    )}
                   </div>
                 </div>
 
