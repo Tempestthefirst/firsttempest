@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Header } from '@/components/Header';
@@ -12,6 +12,7 @@ import { Plus, Users, Calendar, Target, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { RoomCard } from '@/components/RoomCard';
+import { RoomCardSkeleton } from '@/components/ui/skeleton';
 
 export default function MoneyRooms() {
   const [activeTab, setActiveTab] = useState('my-rooms');
@@ -20,9 +21,15 @@ export default function MoneyRooms() {
   const [unlockDate, setUnlockDate] = useState('');
   const [unlockType, setUnlockType] = useState<'target' | 'date' | 'both'>('target');
   const [joinRoomId, setJoinRoomId] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   const { user, rooms, createRoom, joinRoom } = useStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!user) return null;
 
@@ -110,7 +117,13 @@ export default function MoneyRooms() {
 
             <TabsContent value="my-rooms" className="mt-6">
               <div className="space-y-4">
-                {myRooms.length === 0 ? (
+                {isLoading ? (
+                  <>
+                    <RoomCardSkeleton />
+                    <RoomCardSkeleton />
+                    <RoomCardSkeleton />
+                  </>
+                ) : myRooms.length === 0 ? (
                   <Card className="p-12 text-center border-0">
                     <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-2">No rooms yet</h3>

@@ -16,6 +16,9 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 import Wallet from './pages/Wallet';
+import Send from './pages/Send';
+import Receive from './pages/Receive';
+import TopUp from './pages/TopUp';
 
 const queryClient = new QueryClient();
 
@@ -25,7 +28,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => {
-  const { isAuthenticated, checkRoomUnlocks } = useStore();
+  const { isAuthenticated, checkRoomUnlocks, settings } = useStore();
+
+  // Apply dark mode on mount and when settings change
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', settings.darkMode);
+  }, [settings.darkMode]);
 
   // Auto-check room unlocks every 15 seconds
   useEffect(() => {
@@ -91,6 +99,14 @@ const App = () => {
               }
             />
             <Route
+              path="/rooms/:id"
+              element={
+                <ProtectedRoute>
+                  <RoomDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/transactions"
               element={
                 <ProtectedRoute>
@@ -135,6 +151,30 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <MoneyRooms />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/send"
+              element={
+                <ProtectedRoute>
+                  <Send />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/receive"
+              element={
+                <ProtectedRoute>
+                  <Receive />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/topup"
+              element={
+                <ProtectedRoute>
+                  <TopUp />
                 </ProtectedRoute>
               }
             />
