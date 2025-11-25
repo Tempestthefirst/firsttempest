@@ -1,70 +1,35 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowUpRight, ArrowDownLeft, Plus, Wallet, Receipt, Zap, CreditCard } from 'lucide-react';
+import { Send, ArrowDownToLine, Plus, Wallet, Receipt } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 import { Header } from '@/components/Header';
 import { BalanceCard } from '@/components/BalanceCard';
 import { TransactionCard } from '@/components/TransactionCard';
 import { BottomNav } from '@/components/BottomNav';
+import { TransactionSkeleton } from '@/components/ui/skeleton';
 
 export default function Dashboard() {
-  const { user, transactions, updateBalance, addTransaction } = useStore();
+  const { user, transactions } = useStore();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!user) return null;
 
   const recentTransactions = transactions.slice(0, 5);
 
-  const handleTopUp = () => {
-    const amount = 500;
-    updateBalance(amount);
-    addTransaction({
-      type: 'topup',
-      amount,
-      description: 'Account top-up',
-      status: 'confirmed',
-    });
-    toast.success(`Added $${amount} to your balance`);
-  };
-
-  const handleSend = () => {
-    // Mock send functionality
-    const amount = 50;
-    if (user.balance < amount) {
-      toast.error('Insufficient balance');
-      return;
-    }
-    updateBalance(-amount);
-    addTransaction({
-      type: 'send',
-      amount: -amount,
-      description: 'Sent to friend',
-      status: 'confirmed',
-    });
-    toast.success(`Sent $${amount}`);
-  };
-
-  const handleReceive = () => {
-    // Mock receive functionality
-    const amount = 75;
-    updateBalance(amount);
-    addTransaction({
-      type: 'receive',
-      amount,
-      description: 'Received from friend',
-      status: 'confirmed',
-    });
-    toast.success(`Received $${amount}`);
-  };
-
   const quickActions = [
-    { icon: ArrowUpRight, label: 'Send', color: 'text-red-600', bgColor: 'bg-red-50', action: handleSend },
-    { icon: ArrowDownLeft, label: 'Request', color: 'text-green-600', bgColor: 'bg-green-50', action: handleReceive },
-    { icon: Plus, label: 'Add Cash', color: 'text-primary', bgColor: 'bg-primary/10', action: handleTopUp },
-    { icon: Wallet, label: 'Wallet', color: 'text-secondary', bgColor: 'bg-secondary/10', action: () => navigate('/wallet') },
+    { icon: Send, label: 'Send', color: 'from-purple-500 to-purple-600', action: () => navigate('/send') },
+    { icon: ArrowDownToLine, label: 'Request', color: 'from-blue-500 to-blue-600', action: () => navigate('/receive') },
+    { icon: Plus, label: 'Add Cash', color: 'from-green-500 to-green-600', action: () => navigate('/topup') },
+    { icon: Wallet, label: 'Wallet', color: 'from-amber-500 to-amber-600', action: () => navigate('/wallet') },
   ];
 
   return (
@@ -97,18 +62,16 @@ export default function Dashboard() {
               whileHover={{ scale: 1.05, y: -4 }}
               whileTap={{ scale: 0.95 }}
               onClick={action.action}
-              className="flex flex-col items-center gap-3 p-5 bg-card rounded-3xl shadow-sm hover:shadow-md transition-all"
+              className={`flex flex-col items-center gap-3 p-5 bg-gradient-to-br ${action.color} rounded-3xl shadow-banking hover:shadow-banking-lg transition-all text-white`}
             >
-              <div className={`w-14 h-14 rounded-2xl ${action.bgColor} flex items-center justify-center`}>
-                <action.icon className={`w-7 h-7 ${action.color}`} strokeWidth={2.5} />
-              </div>
+              <action.icon className="w-7 h-7" strokeWidth={2.5} />
               <span className="text-sm font-semibold text-center">{action.label}</span>
             </motion.button>
           ))}
         </motion.div>
 
         {/* Transaction History */}
-        <Card className="p-6 mt-8 border-0 shadow-sm">
+        <Card className="p-6 mt-8 border-0 shadow-banking-lg">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Recent Activity</h2>
             <Button
@@ -122,7 +85,13 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-2">
-            {recentTransactions.length === 0 ? (
+            {isLoading ? (
+              <>
+                <TransactionSkeleton />
+                <TransactionSkeleton />
+                <TransactionSkeleton />
+              </>
+            ) : recentTransactions.length === 0 ? (
               <div className="text-center py-12">
                 <Receipt className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">No transactions yet</p>

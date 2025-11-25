@@ -193,6 +193,7 @@ export default function Settings() {
                   checked={settings.darkMode}
                   onCheckedChange={(checked) => {
                     updateSettings({ darkMode: checked });
+                    document.documentElement.classList.toggle('dark', checked);
                     toast.success(checked ? 'Dark mode enabled' : 'Light mode enabled');
                   }}
                 />
