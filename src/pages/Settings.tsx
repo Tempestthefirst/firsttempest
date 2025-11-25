@@ -77,50 +77,38 @@ export default function Settings() {
           </div>
 
           {/* Profile Settings */}
-          <Card className="p-6 mb-4 border-0">
+          <Card className="p-6 mb-4 border-0 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <User className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold">Profile</h2>
+              <h2 className="text-lg font-bold">Profile</h2>
             </div>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Display Name</Label>
-                <Input
-                  id="name"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="mt-1"
-                />
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl hover:bg-muted transition-colors cursor-pointer">
+                <div>
+                  <p className="font-semibold">Name</p>
+                  <p className="text-sm text-muted-foreground">{user?.name || 'Not set'}</p>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="avatar">Avatar URL</Label>
-                <Input
-                  id="avatar"
-                  value={newAvatar}
-                  onChange={(e) => setNewAvatar(e.target.value)}
-                  placeholder="https://..."
-                  className="mt-1"
-                />
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl hover:bg-muted transition-colors cursor-pointer">
+                <div>
+                  <p className="font-semibold">Account ID</p>
+                  <p className="text-sm text-muted-foreground">{user?.id || 'N/A'}</p>
+                </div>
               </div>
-              <Button onClick={handleUpdateProfile} className="w-full">
-                Update Profile
-              </Button>
             </div>
           </Card>
 
           {/* Notification Settings */}
-          <Card className="p-6 mb-4 border-0">
+          <Card className="p-6 mb-4 border-0 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <Bell className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold">Notifications</h2>
+              <h2 className="text-lg font-bold">Notifications</h2>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
                 <div>
-                  <Label htmlFor="notify-contributions">Contribution Receipts</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Get notified when contributions are confirmed
-                  </p>
+                  <p className="font-semibold">Contribution Receipts</p>
+                  <p className="text-sm text-muted-foreground">Get notified when confirmed</p>
                 </div>
                 <Switch
                   id="notify-contributions"
@@ -130,12 +118,10 @@ export default function Settings() {
                   }
                 />
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
                 <div>
-                  <Label htmlFor="notify-countdowns">Pre-unlock Countdowns</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Reminders before room unlock
-                  </p>
+                  <p className="font-semibold">Pre-unlock Countdowns</p>
+                  <p className="text-sm text-muted-foreground">Reminders before unlock</p>
                 </div>
                 <Switch
                   id="notify-countdowns"
@@ -145,12 +131,10 @@ export default function Settings() {
                   }
                 />
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
                 <div>
-                  <Label htmlFor="notify-invites">New Room Invites</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Get notified about new rooms
-                  </p>
+                  <p className="font-semibold">New Room Invites</p>
+                  <p className="text-sm text-muted-foreground">Get notified about rooms</p>
                 </div>
                 <Switch
                   id="notify-invites"
@@ -164,18 +148,16 @@ export default function Settings() {
           </Card>
 
           {/* Privacy & Security */}
-          <Card className="p-6 mb-4 border-0">
+          <Card className="p-6 mb-4 border-0 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <Lock className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold">Privacy & Security</h2>
+              <h2 className="text-lg font-bold">Security</h2>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
                 <div>
-                  <Label htmlFor="require-pin">Require PIN for Contributions</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Extra security for money transfers
-                  </p>
+                  <p className="font-semibold">PIN Protection</p>
+                  <p className="text-sm text-muted-foreground">Require PIN for contributions</p>
                 </div>
                 <Switch
                   id="require-pin"
@@ -185,22 +167,26 @@ export default function Settings() {
                   }
                 />
               </div>
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl hover:bg-muted transition-colors cursor-pointer">
+                <div>
+                  <p className="font-semibold">Change PIN</p>
+                  <p className="text-sm text-muted-foreground">Update security PIN</p>
+                </div>
+              </div>
             </div>
           </Card>
 
           {/* Appearance */}
-          <Card className="p-6 mb-4 border-0">
+          <Card className="p-6 mb-4 border-0 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <Palette className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold">Appearance</h2>
+              <h2 className="text-lg font-bold">Appearance</h2>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
                 <div>
-                  <Label htmlFor="dark-mode">Dark Mode</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Toggle between light and dark theme
-                  </p>
+                  <p className="font-semibold">Dark Mode</p>
+                  <p className="text-sm text-muted-foreground">Toggle theme</p>
                 </div>
                 <Switch
                   id="dark-mode"
@@ -215,38 +201,38 @@ export default function Settings() {
           </Card>
 
           {/* Account Actions */}
-          <Card className="p-6 mb-4 border-0">
+          <Card className="p-6 mb-4 border-0 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <LogOut className="w-5 h-5 text-destructive" />
-              <h2 className="text-lg font-semibold">Account Actions</h2>
+              <h2 className="text-lg font-bold">Account</h2>
             </div>
             <Button 
               variant="destructive" 
               onClick={handleLogout}
-              className="w-full"
+              className="w-full h-12 font-semibold"
             >
-              <LogOut className="w-4 h-4 mr-2" />
+              <LogOut className="w-5 h-5 mr-2" />
               Logout
             </Button>
           </Card>
 
           {/* Demo Controls */}
-          <Card className="p-6 border-0 bg-muted/50">
+          <Card className="p-6 border-0 bg-muted/30">
             <div className="flex items-center gap-2 mb-4">
               <Database className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold">Demo Controls</h2>
+              <h2 className="text-lg font-bold">Demo Controls</h2>
             </div>
             <div className="space-y-3">
               <Button
                 variant="outline"
                 onClick={handleSeedDemo}
-                className="w-full"
+                className="w-full h-12 font-semibold"
               >
                 Load Demo Data
               </Button>
               <Dialog open={showClearDialog} onOpenChange={setShowClearDialog}>
                 <DialogTrigger asChild>
-                  <Button variant="destructive" className="w-full">
+                  <Button variant="destructive" className="w-full h-12 font-semibold">
                     Clear All Data
                   </Button>
                 </DialogTrigger>

@@ -8,39 +8,42 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    /* Kuda-inspired purple with PayPal blue accents */
+    --background: 0 0% 98%;
+    --foreground: 240 10% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 240 10% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 240 10% 15%;
 
-    --primary: 221 83% 53%;
+    /* Kuda purple as primary */
+    --primary: 270 65% 45%;
     --primary-foreground: 0 0% 100%;
     
-    --primary-gradient-start: 221 83% 53%;
-    --primary-gradient-end: 195 100% 50%;
+    --primary-gradient-start: 270 65% 45%;
+    --primary-gradient-end: 280 70% 55%;
     
-    --secondary: 263 70% 50%;
+    /* PayPal blue as secondary */
+    --secondary: 211 100% 37%;
     --secondary-foreground: 0 0% 100%;
     
-    --secondary-gradient-start: 263 70% 50%;
-    --secondary-gradient-end: 245 58% 51%;
+    --secondary-gradient-start: 211 100% 37%;
+    --secondary-gradient-end: 200 100% 45%;
 
-    --muted: 220 13% 91%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
 
-    --accent: 221 83% 53%;
+    --accent: 211 100% 37%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 221 83% 53%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 270 65% 45%;
 
     --radius: 1rem;
 
@@ -55,39 +58,40 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    /* Kuda dark theme with purple */
+    --background: 240 20% 8%;
+    --foreground: 0 0% 98%;
 
-    --card: 217 33% 17%;
-    --card-foreground: 210 40% 98%;
+    --card: 240 15% 12%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 217 33% 17%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 15% 12%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 221 83% 53%;
+    --primary: 270 65% 55%;
     --primary-foreground: 0 0% 100%;
     
-    --primary-gradient-start: 221 83% 53%;
-    --primary-gradient-end: 195 100% 50%;
+    --primary-gradient-start: 270 65% 55%;
+    --primary-gradient-end: 280 70% 65%;
     
-    --secondary: 263 70% 50%;
+    --secondary: 211 100% 45%;
     --secondary-foreground: 0 0% 100%;
     
-    --secondary-gradient-start: 263 70% 50%;
-    --secondary-gradient-end: 245 58% 51%;
+    --secondary-gradient-start: 211 100% 45%;
+    --secondary-gradient-end: 200 100% 55%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 240 15% 15%;
+    --muted-foreground: 240 5% 65%;
 
-    --accent: 221 83% 53%;
+    --accent: 211 100% 45%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 221 83% 53%;
+    --border: 240 15% 20%;
+    --input: 240 15% 20%;
+    --ring: 270 65% 55%;
     
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 210 40% 98%;

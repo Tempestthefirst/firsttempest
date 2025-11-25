@@ -61,11 +61,10 @@ export default function Dashboard() {
   };
 
   const quickActions = [
-    { icon: ArrowUpRight, label: 'Send Money', color: 'text-primary', bgColor: 'bg-primary/10', action: handleSend },
-    { icon: ArrowDownLeft, label: 'Receive', color: 'text-secondary', bgColor: 'bg-secondary/10', action: handleReceive },
-    { icon: Plus, label: 'Top Up', color: 'text-accent', bgColor: 'bg-accent/10', action: handleTopUp },
-    { icon: Zap, label: 'Bills', color: 'text-orange-600', bgColor: 'bg-orange-50', action: () => toast.info('Bills coming soon!') },
-    { icon: CreditCard, label: 'Cards', color: 'text-pink-600', bgColor: 'bg-pink-50', action: () => toast.info('Cards coming soon!') },
+    { icon: ArrowUpRight, label: 'Send', color: 'text-red-600', bgColor: 'bg-red-50', action: handleSend },
+    { icon: ArrowDownLeft, label: 'Request', color: 'text-green-600', bgColor: 'bg-green-50', action: handleReceive },
+    { icon: Plus, label: 'Add Cash', color: 'text-primary', bgColor: 'bg-primary/10', action: handleTopUp },
+    { icon: Wallet, label: 'Wallet', color: 'text-secondary', bgColor: 'bg-secondary/10', action: () => navigate('/wallet') },
   ];
 
   return (
@@ -84,7 +83,7 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <motion.div
-          className="grid grid-cols-5 gap-3 mt-6"
+          className="grid grid-cols-4 gap-4 mt-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
@@ -92,33 +91,33 @@ export default function Dashboard() {
           {quickActions.map((action, index) => (
             <motion.button
               key={action.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.05 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.1, type: 'spring' }}
+              whileHover={{ scale: 1.05, y: -4 }}
               whileTap={{ scale: 0.95 }}
               onClick={action.action}
-              className="flex flex-col items-center gap-2 p-4 bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+              className="flex flex-col items-center gap-3 p-5 bg-card rounded-3xl shadow-sm hover:shadow-md transition-all"
             >
-              <div className={`w-12 h-12 rounded-full ${action.bgColor} flex items-center justify-center`}>
-                <action.icon className={`w-6 h-6 ${action.color}`} />
+              <div className={`w-14 h-14 rounded-2xl ${action.bgColor} flex items-center justify-center`}>
+                <action.icon className={`w-7 h-7 ${action.color}`} strokeWidth={2.5} />
               </div>
-              <span className="text-xs font-medium text-center">{action.label}</span>
+              <span className="text-sm font-semibold text-center">{action.label}</span>
             </motion.button>
           ))}
         </motion.div>
 
         {/* Transaction History */}
         <Card className="p-6 mt-8 border-0 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Transaction History</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold">Recent Activity</h2>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/transactions')}
-              className="text-primary"
+              className="text-primary font-semibold"
             >
-              View All
+              See All
             </Button>
           </div>
 
@@ -149,15 +148,16 @@ export default function Dashboard() {
 
       {/* Floating Action Button - Create Money Room */}
       <motion.button
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        whileHover={{ scale: 1.1 }}
+        initial={{ scale: 0, rotate: -180 }}
+        animate={{ scale: 1, rotate: 0 }}
+        whileHover={{ scale: 1.1, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
         whileTap={{ scale: 0.9 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
         onClick={() => navigate('/rooms')}
-        className="fixed bottom-24 right-6 z-40 w-14 h-14 rounded-full gradient-primary shadow-lg flex items-center justify-center text-white"
+        className="fixed bottom-24 right-6 z-40 w-16 h-16 rounded-full gradient-primary shadow-2xl flex items-center justify-center text-white"
         aria-label="Create Money Room"
       >
-        <Wallet className="w-6 h-6" />
+        <Plus className="w-8 h-8" strokeWidth={3} />
       </motion.button>
 
       <BottomNav />
