@@ -1,0 +1,75 @@
+{
+  "users": [
+    { "id": "u_you", "name": "You", "pin": "1234", "balance": 10000, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=you" },
+    { "id": "u_alice", "name": "Alice", "pin": "0000", "balance": 5000, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=alice" },
+    { "id": "u_bob", "name": "Bob", "pin": "0000", "balance": 7500, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=bob" },
+    { "id": "u_charlie", "name": "Charlie", "pin": "0000", "balance": 3000, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=charlie" },
+    { "id": "u_diana", "name": "Diana", "pin": "0000", "balance": 12000, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=diana" },
+    { "id": "u_evan", "name": "Evan", "pin": "0000", "balance": 8000, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=evan" }
+  ],
+  "rooms": [
+    {
+      "id": "room_a",
+      "name": "Weekend Trip Fund",
+      "targetAmount": 30000,
+      "currentAmount": 18500,
+      "unlockType": "target",
+      "createdBy": "Alice",
+      "creatorId": "u_alice",
+      "members": ["u_alice", "u_you", "u_bob"],
+      "isUnlocked": false,
+      "status": "open",
+      "inviteCode": "WEEKEND1"
+    },
+    {
+      "id": "room_b",
+      "name": "Birthday Gift Pool",
+      "targetAmount": 15000,
+      "currentAmount": 8000,
+      "unlockType": "date",
+      "createdBy": "Charlie",
+      "creatorId": "u_charlie",
+      "members": ["u_charlie", "u_diana", "u_you"],
+      "isUnlocked": false,
+      "status": "open",
+      "inviteCode": "BDAY2025"
+    },
+    {
+      "id": "room_c",
+      "name": "Movie Night",
+      "targetAmount": 5000,
+      "currentAmount": 5000,
+      "unlockType": "target",
+      "createdBy": "Evan",
+      "creatorId": "u_evan",
+      "members": ["u_evan", "u_you", "u_alice", "u_bob"],
+      "isUnlocked": true,
+      "status": "unlocked",
+      "inviteCode": "MOVIE123"
+    }
+  ],
+  "transactions": [
+    { "id": "t1", "type": "topup", "amount": 5000, "description": "Top-up ₦5000", "status": "confirmed" },
+    { "id": "t2", "type": "send", "amount": -1000, "description": "Sent to Bob: Coffee", "toUserId": "u_bob", "status": "confirmed" },
+    { "id": "t3", "type": "room-contribution", "amount": -5000, "description": "Contributed to Weekend Trip Fund", "roomId": "room_a", "status": "confirmed" },
+    { "id": "t4", "type": "receive", "amount": 2500, "description": "Received from Alice", "fromUserId": "u_alice", "status": "confirmed" }
+  ],
+  "notifications": [
+    {
+      "id": "n1",
+      "type": "contribution",
+      "title": "Contribution Confirmed",
+      "message": "₦5000 added to Weekend Trip Fund",
+      "roomId": "room_a",
+      "read": false
+    },
+    {
+      "id": "n2",
+      "type": "countdown",
+      "title": "Room Unlocking Soon",
+      "message": "Birthday Gift Pool unlocks in 2 hours!",
+      "roomId": "room_b",
+      "read": false
+    }
+  ]
+}

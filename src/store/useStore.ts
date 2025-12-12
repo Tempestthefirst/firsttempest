@@ -646,7 +646,7 @@ export const useStore = create<AppStore>()(
       },
     }),
     {
-      name: 'splitspace-storage',
+      name: 'splitspace:v1',
     }
   )
 );

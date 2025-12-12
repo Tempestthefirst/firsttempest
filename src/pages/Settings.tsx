@@ -6,11 +6,9 @@ import { BottomNav } from '@/components/BottomNav';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Settings as SettingsIcon, Bell, Lock, Palette, Database, User, LogOut } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Lock, Palette, Database, User, LogOut, Info, Gauge, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
@@ -24,21 +22,36 @@ import {
 export default function Settings() {
   const { user, settings, updateSettings, seedDemo, clearData, logout } = useStore();
   const navigate = useNavigate();
-  const [newName, setNewName] = useState(user?.name || '');
-  const [newAvatar, setNewAvatar] = useState(user?.avatar || '');
   const [showClearDialog, setShowClearDialog] = useState(false);
+  const [isDevMode] = useState(() => {
+    // Simple check - in production you might use env vars
+    return window.location.hostname === 'localhost' || 
+           window.location.hostname.includes('lovable.app') ||
+           window.location.hostname.includes('lovableproject.com');
+  });
+
+  // Apply dark mode on mount and when setting changes
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', settings.darkMode);
+  }, [settings.darkMode]);
 
   if (!user) return null;
 
   const handleLogout = () => {
     logout();
+    clearData();
     toast.success('Logged out successfully');
     navigate('/');
   };
 
-  const handleSeedDemo = () => {
-    seedDemo();
-    toast.success('Demo data loaded! Check your dashboard.');
+  const handleSeedDemo = async () => {
+    try {
+      // Call the seed function from store
+      seedDemo();
+      toast.success('Demo data loaded! Check your dashboard.');
+    } catch (error) {
+      toast.error('Failed to load demo data');
+    }
   };
 
   const handleClearData = () => {
@@ -48,9 +61,10 @@ export default function Settings() {
     window.location.href = '/';
   };
 
-  const handleUpdateProfile = () => {
-    // In a real app, this would update the user profile
-    toast.success('Profile updated (demo mode)');
+  const handleDarkModeToggle = (checked: boolean) => {
+    updateSettings({ darkMode: checked });
+    document.documentElement.classList.toggle('dark', checked);
+    toast.success(checked ? 'Dark mode enabled' : 'Light mode enabled');
   };
 
   return (
@@ -58,7 +72,7 @@ export default function Settings() {
       <Header />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
-        <BackButton to="/" />
+        <BackButton fallback="/dashboard" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -177,86 +191,140 @@ export default function Settings() {
           </Card>
 
           {/* Appearance */}
-          <Card className="p-6 mb-4 border-0 shadow-sm">
+          <Card className="p-6 mb-4 border-0 shadow-sm" role="region" aria-label="Appearance settings">
             <div className="flex items-center gap-2 mb-4">
-              <Palette className="w-5 h-5 text-primary" />
+              <Palette className="w-5 h-5 text-primary" aria-hidden="true" />
               <h2 className="text-lg font-bold">Appearance</h2>
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
-                <div>
+                <label htmlFor="dark-mode" className="flex-1 cursor-pointer">
                   <p className="font-semibold">Dark Mode</p>
-                  <p className="text-sm text-muted-foreground">Toggle theme</p>
-                </div>
+                  <p className="text-sm text-muted-foreground">Toggle between light and dark theme</p>
+                </label>
                 <Switch
                   id="dark-mode"
                   checked={settings.darkMode}
-                  onCheckedChange={(checked) => {
-                    updateSettings({ darkMode: checked });
-                    document.documentElement.classList.toggle('dark', checked);
-                    toast.success(checked ? 'Dark mode enabled' : 'Light mode enabled');
-                  }}
+                  onCheckedChange={handleDarkModeToggle}
+                  aria-label="Toggle dark mode"
                 />
               </div>
             </div>
           </Card>
 
-          {/* Account Actions */}
-          <Card className="p-6 mb-4 border-0 shadow-sm">
+          {/* Limits */}
+          <Card className="p-6 mb-4 border-0 shadow-sm" role="region" aria-label="Transaction limits">
             <div className="flex items-center gap-2 mb-4">
-              <LogOut className="w-5 h-5 text-destructive" />
+              <Gauge className="w-5 h-5 text-primary" aria-hidden="true" />
+              <h2 className="text-lg font-bold">Limits</h2>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
+                <div>
+                  <p className="font-semibold">Daily Transfer Limit</p>
+                  <p className="text-sm text-muted-foreground">₦500,000 per day</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
+                <div>
+                  <p className="font-semibold">Single Transaction Limit</p>
+                  <p className="text-sm text-muted-foreground">₦100,000 per transaction</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* About */}
+          <Card className="p-6 mb-4 border-0 shadow-sm" role="region" aria-label="About SplitSpace">
+            <div className="flex items-center gap-2 mb-4">
+              <Info className="w-5 h-5 text-primary" aria-hidden="true" />
+              <h2 className="text-lg font-bold">About</h2>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
+                <div>
+                  <p className="font-semibold">App Version</p>
+                  <p className="text-sm text-muted-foreground">1.0.0</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
+                <div>
+                  <p className="font-semibold">Terms of Service</p>
+                  <p className="text-sm text-muted-foreground">Read our terms</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
+                <div>
+                  <p className="font-semibold">Privacy Policy</p>
+                  <p className="text-sm text-muted-foreground">How we handle your data</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Account Actions */}
+          <Card className="p-6 mb-4 border-0 shadow-sm" role="region" aria-label="Account actions">
+            <div className="flex items-center gap-2 mb-4">
+              <LogOut className="w-5 h-5 text-destructive" aria-hidden="true" />
               <h2 className="text-lg font-bold">Account</h2>
             </div>
             <Button 
               variant="destructive" 
               onClick={handleLogout}
               className="w-full h-12 font-semibold"
+              aria-label="Logout from your account"
             >
-              <LogOut className="w-5 h-5 mr-2" />
+              <LogOut className="w-5 h-5 mr-2" aria-hidden="true" />
               Logout
             </Button>
           </Card>
 
-          {/* Demo Controls */}
-          <Card className="p-6 border-0 bg-muted/30">
-            <div className="flex items-center gap-2 mb-4">
-              <Database className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-bold">Demo Controls</h2>
-            </div>
-            <div className="space-y-3">
-              <Button
-                variant="outline"
-                onClick={handleSeedDemo}
-                className="w-full h-12 font-semibold"
-              >
-                Load Demo Data
-              </Button>
-              <Dialog open={showClearDialog} onOpenChange={setShowClearDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="destructive" className="w-full h-12 font-semibold">
-                    Clear All Data
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Clear All Data?</DialogTitle>
-                    <DialogDescription>
-                      This will permanently delete all rooms, transactions, and user data.
-                      This action cannot be undone.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="flex gap-3 justify-end mt-4">
-                    <Button variant="outline" onClick={() => setShowClearDialog(false)}>
-                      Cancel
+          {/* Dev Controls - Only show in dev mode */}
+          {isDevMode && (
+            <Card className="p-6 border-0 bg-muted/30" role="region" aria-label="Developer controls">
+              <div className="flex items-center gap-2 mb-2">
+                <Database className="w-5 h-5 text-primary" aria-hidden="true" />
+                <h2 className="text-lg font-bold">Dev Controls</h2>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">These controls are only visible in development</p>
+              <div className="space-y-3">
+                <Button
+                  variant="outline"
+                  onClick={handleSeedDemo}
+                  className="w-full h-12 font-semibold"
+                  aria-label="Load demo data for testing"
+                >
+                  <Database className="w-4 h-4 mr-2" aria-hidden="true" />
+                  Seed Demo Data
+                </Button>
+                <Dialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="destructive" className="w-full h-12 font-semibold" aria-label="Clear all application data">
+                      <Trash2 className="w-4 h-4 mr-2" aria-hidden="true" />
+                      Clear All Data
                     </Button>
-                    <Button variant="destructive" onClick={handleClearData}>
-                      Clear Data
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </Card>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Clear All Data?</DialogTitle>
+                      <DialogDescription>
+                        This will permanently delete all rooms, transactions, and user data.
+                        This action cannot be undone.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex gap-3 justify-end mt-4">
+                      <Button variant="outline" onClick={() => setShowClearDialog(false)}>
+                        Cancel
+                      </Button>
+                      <Button variant="destructive" onClick={handleClearData}>
+                        Clear Data
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </Card>
+          )}
         </motion.div>
       </div>
 
