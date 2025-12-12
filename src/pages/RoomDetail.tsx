@@ -15,12 +15,12 @@ import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 
 export default function RoomDetail() {
-  const { roomId } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { rooms, contributeToRoom, user, checkRoomUnlocks } = useStore();
   const [amount, setAmount] = useState('');
 
-  const room = rooms.find((r) => r.id === roomId);
+  const room = rooms.find((r) => r.id === id);
 
   useEffect(() => {
     checkRoomUnlocks();

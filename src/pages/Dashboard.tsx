@@ -62,16 +62,17 @@ export default function Dashboard() {
               whileHover={{ scale: 1.05, y: -4 }}
               whileTap={{ scale: 0.95 }}
               onClick={action.action}
-              className={`flex flex-col items-center gap-3 p-5 bg-gradient-to-br ${action.color} rounded-3xl shadow-banking hover:shadow-banking-lg transition-all text-white`}
+              className={`flex flex-col items-center gap-3 p-5 bg-gradient-to-br ${action.color} rounded-3xl shadow-banking hover:shadow-banking-lg transition-all text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2`}
+              aria-label={action.label}
             >
-              <action.icon className="w-7 h-7" strokeWidth={2.5} />
+              <action.icon className="w-7 h-7" strokeWidth={2.5} aria-hidden="true" />
               <span className="text-sm font-semibold text-center">{action.label}</span>
             </motion.button>
           ))}
         </motion.div>
 
         {/* Transaction History */}
-        <Card className="p-6 mt-8 border-0 shadow-banking-lg">
+        <Card className="p-6 mt-8 border-0 shadow-banking-lg" role="region" aria-label="Recent transactions">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Recent Activity</h2>
             <Button
@@ -79,6 +80,7 @@ export default function Dashboard() {
               size="sm"
               onClick={() => navigate('/transactions')}
               className="text-primary font-semibold"
+              aria-label="See all transactions"
             >
               See All
             </Button>
@@ -92,8 +94,8 @@ export default function Dashboard() {
                 <TransactionSkeleton />
               </>
             ) : recentTransactions.length === 0 ? (
-              <div className="text-center py-12">
-                <Receipt className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <div className="text-center py-12" role="status" aria-label="No transactions">
+                <Receipt className="w-16 h-16 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
                 <p className="text-muted-foreground">No transactions yet</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Your activity will appear here
