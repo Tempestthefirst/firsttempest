@@ -12,26 +12,29 @@ export const Header = () => {
 
   return (
     <motion.header
-      className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border"
+      className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-lg mx-auto px-4">
+        <div className="flex items-center justify-between h-14">
           <motion.div 
             className="flex items-center gap-3 cursor-pointer"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate('/profile')}
+            aria-label="Go to profile"
           >
-            <Avatar className="w-10 h-10 ring-2 ring-primary/20">
+            <Avatar className="w-9 h-9 ring-2 ring-border">
               <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback>{user.name[0].toUpperCase()}</AvatarFallback>
+              <AvatarFallback className="bg-foreground text-background text-sm font-bold">
+                {user.name[0].toUpperCase()}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-medium">Welcome back,</p>
-              <p className="text-lg font-semibold">{user.name}</p>
+              <p className="text-xs text-muted-foreground">Welcome back,</p>
+              <p className="text-sm font-semibold">{user.name}</p>
             </div>
           </motion.div>
 

@@ -2,105 +2,101 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Black/White/Green Design System */
 
 @layer base {
   :root {
-    /* Kuda-inspired purple with PayPal blue accents */
-    --background: 0 0% 98%;
-    --foreground: 240 10% 15%;
+    /* Pure Black/White with Green accent */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 15%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 15%;
+    --popover-foreground: 0 0% 0%;
 
-    /* Kuda purple as primary */
-    --primary: 270 65% 45%;
+    /* Pure Black as primary */
+    --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
-    
-    --primary-gradient-start: 270 65% 45%;
-    --primary-gradient-end: 280 70% 55%;
-    
-    /* PayPal blue as secondary */
-    --secondary: 211 100% 37%;
-    --secondary-foreground: 0 0% 100%;
-    
-    --secondary-gradient-start: 211 100% 37%;
-    --secondary-gradient-end: 200 100% 45%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-
-    --accent: 211 100% 37%;
+    /* Solid Green accent */
+    --accent: 142 76% 36%;
     --accent-foreground: 0 0% 100%;
+
+    /* Secondary is also black */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 270 65% 45%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 142 76% 36%;
 
     --radius: 1rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 221 83% 53%;
+    /* Success/positive states use green */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 0 0% 0%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 13% 91%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 142 76% 36%;
   }
 
   .dark {
-    /* Kuda dark theme with purple */
-    --background: 240 20% 8%;
-    --foreground: 0 0% 98%;
+    /* Inverted: White on Black with Green accent */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
 
-    --card: 240 15% 12%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 240 15% 12%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 270 65% 55%;
-    --primary-foreground: 0 0% 100%;
-    
-    --primary-gradient-start: 270 65% 55%;
-    --primary-gradient-end: 280 70% 65%;
-    
-    --secondary: 211 100% 45%;
-    --secondary-foreground: 0 0% 100%;
-    
-    --secondary-gradient-start: 211 100% 45%;
-    --secondary-gradient-end: 200 100% 55%;
+    /* White as primary in dark mode */
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
 
-    --muted: 240 15% 15%;
-    --muted-foreground: 240 5% 65%;
-
-    --accent: 211 100% 45%;
+    /* Green accent stays solid */
+    --accent: 142 76% 42%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 63% 50%;
-    --destructive-foreground: 0 0% 98%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
 
-    --border: 240 15% 20%;
-    --input: 240 15% 20%;
-    --ring: 270 65% 55%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 142 76% 42%;
+
+    --success: 142 76% 42%;
+    --success-foreground: 0 0% 100%;
     
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 142 76% 42%;
   }
 }
 
@@ -110,11 +106,7 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased transition-colors duration-300;
-  }
-  
-  * {
-    @apply transition-colors duration-300;
+    @apply bg-background text-foreground font-sans antialiased transition-colors duration-200;
   }
   
   /* Banking UI enhancements */
@@ -123,17 +115,32 @@ All colors MUST be HSL.
   }
   
   .shadow-banking-lg {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   }
 }
 
 @layer utilities {
+  /* Black to white gradient */
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary-gradient-start)), hsl(var(--primary-gradient-end)));
+    background: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 30%));
   }
   
-  .gradient-secondary {
-    background: linear-gradient(135deg, hsl(var(--secondary-gradient-start)), hsl(var(--secondary-gradient-end)));
+  /* White to black gradient (for dark mode) */
+  .gradient-primary-reverse {
+    background: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 0% 70%));
+  }
+  
+  /* Success/Green button */
+  .bg-success {
+    background-color: hsl(var(--success));
+  }
+  
+  .text-success {
+    color: hsl(var(--success));
+  }
+
+  .border-success {
+    border-color: hsl(var(--success));
   }
   
   .animate-shimmer {
@@ -163,5 +170,19 @@ All colors MUST be HSL.
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  /* Success pulse animation */
+  @keyframes success-pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  .animate-success-pulse {
+    animation: success-pulse 0.5s ease-in-out;
   }
 }

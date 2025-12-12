@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 
 export interface Transaction {
   id: string;
-  type: 'send' | 'receive' | 'topup' | 'room-contribution' | 'room-unlock' | 'transfer' | 'settlement';
+  type: 'send' | 'receive' | 'topup' | 'room-contribution' | 'room-unlock' | 'transfer' | 'settlement' | 'hourglass-deduction';
   amount: number;
   description: string;
   date: Date;
@@ -24,7 +24,7 @@ export interface Contribution {
 
 export interface Notification {
   id: string;
-  type: 'contribution' | 'unlock' | 'countdown' | 'invite' | 'dispute';
+  type: 'contribution' | 'unlock' | 'countdown' | 'invite' | 'dispute' | 'hourglass';
   title: string;
   message: string;
   roomId?: string;
@@ -50,12 +50,28 @@ export interface MoneyRoom {
   inviteCode: string;
 }
 
+export interface HourGlassPlan {
+  id: string;
+  userId: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  endDate: Date;
+  recurrence: 'daily' | 'weekly' | 'monthly';
+  deductionAmount: number;
+  nextDeductionDate: Date;
+  status: 'active' | 'paused' | 'completed' | 'cancelled';
+  createdAt: Date;
+}
+
 interface User {
   id: string;
   name: string;
   pin: string;
   balance: number;
   avatar: string;
+  virtualAccountNumber?: string;
+  virtualAccountBank?: string;
 }
 
 interface AppSettings {
@@ -71,6 +87,7 @@ interface AppStore {
   transactions: Transaction[];
   rooms: MoneyRoom[];
   notifications: Notification[];
+  hourGlassPlans: HourGlassPlan[];
   settings: AppSettings;
   isAuthenticated: boolean;
   allUsers: User[];
@@ -98,6 +115,13 @@ interface AppStore {
   checkRoomUnlocks: () => void;
   refundRoom: (roomId: string) => void;
   
+  // HourGlass actions
+  createHourGlassPlan: (plan: Omit<HourGlassPlan, 'id' | 'userId' | 'currentAmount' | 'status' | 'createdAt' | 'nextDeductionDate'>) => string | null;
+  pauseHourGlassPlan: (planId: string) => void;
+  resumeHourGlassPlan: (planId: string) => void;
+  cancelHourGlassPlan: (planId: string) => void;
+  processHourGlassDeductions: () => void;
+  
   // Notification actions
   addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
   markNotificationRead: (notificationId: string) => void;
@@ -117,6 +141,7 @@ interface AppStore {
 
 const generateId = () => Math.random().toString(36).substring(2, 9).toUpperCase();
 const generateInviteCode = () => Math.random().toString(36).substring(2, 10).toUpperCase();
+const generateVirtualAccount = () => '00' + Math.floor(Math.random() * 100000000).toString().padStart(8, '0');
 
 export const useStore = create<AppStore>()(
   persist(
@@ -125,6 +150,7 @@ export const useStore = create<AppStore>()(
       transactions: [],
       rooms: [],
       notifications: [],
+      hourGlassPlans: [],
       allUsers: [],
       isAuthenticated: false,
       settings: {
@@ -142,7 +168,6 @@ export const useStore = create<AppStore>()(
           set({ user: foundUser, isAuthenticated: true });
           return true;
         }
-        // Fallback for old single-user storage
         if (state.user && state.user.name === name && state.user.pin === pin) {
           set({ isAuthenticated: true });
           return true;
@@ -157,6 +182,8 @@ export const useStore = create<AppStore>()(
           pin,
           balance: 10000,
           avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
+          virtualAccountNumber: generateVirtualAccount(),
+          virtualAccountBank: 'SplitSpace Bank',
         };
         set((state) => ({
           user: newUser,
@@ -179,13 +206,12 @@ export const useStore = create<AppStore>()(
       },
 
       topUp: async (amount: number) => {
-        // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 800));
         get().updateBalance(amount);
         get().addTransaction({
           type: 'topup',
           amount,
-          description: `Top-up ₦${amount}`,
+          description: `Added ₦${amount.toLocaleString()}`,
           status: 'confirmed',
         });
       },
@@ -194,20 +220,16 @@ export const useStore = create<AppStore>()(
         const state = get();
         if (!state.user || state.user.balance < amount) return false;
         
-        // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 600));
         
-        // Deduct from sender
         get().updateBalance(-amount);
         
-        // Credit to receiver (if in allUsers)
         set((state) => ({
           allUsers: state.allUsers.map(u =>
             u.id === toUserId ? { ...u, balance: u.balance + amount } : u
           ),
         }));
         
-        // Record transactions
         get().addTransaction({
           type: 'send',
           amount: -amount,
@@ -251,7 +273,6 @@ export const useStore = create<AppStore>()(
           rooms: [...state.rooms, newRoom],
         }));
         
-        // Add notification
         if (state.settings.notifyInvites) {
           get().addNotification({
             type: 'invite',
@@ -269,10 +290,8 @@ export const useStore = create<AppStore>()(
         const room = state.rooms.find((r) => r.inviteCode === inviteCode);
         if (!room || !state.user) return null;
         
-        // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 400));
         
-        // Add user to members if not already
         if (!room.members.includes(state.user.id)) {
           set((state) => ({
             rooms: state.rooms.map((r) =>
@@ -290,8 +309,6 @@ export const useStore = create<AppStore>()(
         const state = get();
         if (!state.user || state.user.balance < amount) return false;
 
-        
-        // Simulate API delay (payment processing)
         await new Promise(resolve => setTimeout(resolve, 600));
         
         const contribution: Contribution = {
@@ -332,18 +349,17 @@ export const useStore = create<AppStore>()(
         get().addTransaction({
           type: 'room-contribution',
           amount: -amount,
-          description: `Contributed to room ${get().rooms.find(r => r.id === roomId)?.name || roomId}`,
+          description: `Contributed to ${get().rooms.find(r => r.id === roomId)?.name || roomId}`,
           roomId,
           status: 'confirmed',
         });
         
-        // Add notification
         const room = get().rooms.find(r => r.id === roomId);
         if (state.settings.notifyContributions && room) {
           get().addNotification({
             type: 'contribution',
             title: 'Contribution Confirmed',
-            message: `₦${amount} added to ${room.name}`,
+            message: `₦${amount.toLocaleString()} added to ${room.name}`,
             roomId,
           });
         }
@@ -360,7 +376,6 @@ export const useStore = create<AppStore>()(
         const totalAmount = room.currentAmount;
         const creatorId = room.creatorId;
 
-        // Transfer escrow to creator
         set((state) => ({
           allUsers: state.allUsers.map(u =>
             u.id === creatorId ? { ...u, balance: u.balance + totalAmount } : u
@@ -373,20 +388,18 @@ export const useStore = create<AppStore>()(
           ),
         }));
 
-        // Create settlement transaction for creator
         get().addTransaction({
           type: 'settlement',
           amount: totalAmount,
-          description: `Room "${room.name}" unlocked - received ₦${totalAmount}`,
+          description: `Room "${room.name}" unlocked`,
           roomId,
           status: 'confirmed',
         });
         
-        // Notify all contributors
         get().addNotification({
           type: 'unlock',
           title: `${room.name} Unlocked!`,
-          message: `₦${totalAmount} released to ${get().getUserById(creatorId)?.name || 'creator'}`,
+          message: `₦${totalAmount.toLocaleString()} released`,
           roomId,
         });
       },
@@ -396,7 +409,6 @@ export const useStore = create<AppStore>()(
         const room = state.rooms.find((r) => r.id === roomId);
         if (!room) return;
 
-        // Refund all contributions
         room.contributions.forEach((contrib) => {
           set((state) => ({
             allUsers: state.allUsers.map(u =>
@@ -410,7 +422,7 @@ export const useStore = create<AppStore>()(
           get().addTransaction({
             type: 'room-unlock',
             amount: contrib.amount,
-            description: `Refund from room "${room.name}"`,
+            description: `Refund from "${room.name}"`,
             roomId,
             status: 'refunded',
           });
@@ -445,12 +457,10 @@ export const useStore = create<AppStore>()(
             shouldUnlock = true;
           }
           
-          // Countdown notifications
           if (room.unlockDate && !shouldUnlock && state.settings.notifyCountdowns) {
             const timeLeft = new Date(room.unlockDate).getTime() - now.getTime();
             const hoursLeft = timeLeft / (1000 * 60 * 60);
             
-            // Notify at 24h, 1h if not already notified
             if (hoursLeft <= 24 && hoursLeft > 23 && !state.notifications.find(n => 
               n.roomId === room.id && n.message.includes('24 hours')
             )) {
@@ -468,6 +478,183 @@ export const useStore = create<AppStore>()(
           }
         });
       },
+
+      // HourGlass actions
+      createHourGlassPlan: (plan) => {
+        const state = get();
+        if (!state.user || state.user.balance < plan.deductionAmount) return null;
+
+        const now = new Date();
+        let nextDeductionDate = new Date(now);
+        
+        // Set next deduction based on recurrence
+        switch (plan.recurrence) {
+          case 'daily':
+            nextDeductionDate.setDate(nextDeductionDate.getDate() + 1);
+            break;
+          case 'weekly':
+            nextDeductionDate.setDate(nextDeductionDate.getDate() + 7);
+            break;
+          case 'monthly':
+            nextDeductionDate.setMonth(nextDeductionDate.getMonth() + 1);
+            break;
+        }
+
+        const newPlan: HourGlassPlan = {
+          ...plan,
+          id: generateId(),
+          userId: state.user.id,
+          currentAmount: plan.deductionAmount,
+          status: 'active',
+          createdAt: now,
+          nextDeductionDate,
+        };
+
+        // Deduct first amount immediately
+        get().updateBalance(-plan.deductionAmount);
+        
+        get().addTransaction({
+          type: 'hourglass-deduction',
+          amount: -plan.deductionAmount,
+          description: `HourGlass: ${plan.name} - First savings`,
+          status: 'confirmed',
+        });
+
+        set((state) => ({
+          hourGlassPlans: [...state.hourGlassPlans, newPlan],
+        }));
+
+        get().addNotification({
+          type: 'hourglass',
+          title: 'Savings Plan Started',
+          message: `${plan.name} - First ₦${plan.deductionAmount.toLocaleString()} saved!`,
+        });
+
+        return newPlan.id;
+      },
+
+      pauseHourGlassPlan: (planId: string) => {
+        set((state) => ({
+          hourGlassPlans: state.hourGlassPlans.map(p =>
+            p.id === planId ? { ...p, status: 'paused' } : p
+          ),
+        }));
+      },
+
+      resumeHourGlassPlan: (planId: string) => {
+        const now = new Date();
+        set((state) => ({
+          hourGlassPlans: state.hourGlassPlans.map(p => {
+            if (p.id !== planId) return p;
+            
+            let nextDeductionDate = new Date(now);
+            switch (p.recurrence) {
+              case 'daily':
+                nextDeductionDate.setDate(nextDeductionDate.getDate() + 1);
+                break;
+              case 'weekly':
+                nextDeductionDate.setDate(nextDeductionDate.getDate() + 7);
+                break;
+              case 'monthly':
+                nextDeductionDate.setMonth(nextDeductionDate.getMonth() + 1);
+                break;
+            }
+            
+            return { ...p, status: 'active', nextDeductionDate };
+          }),
+        }));
+      },
+
+      cancelHourGlassPlan: (planId: string) => {
+        const state = get();
+        const plan = state.hourGlassPlans.find(p => p.id === planId);
+        
+        if (plan && plan.currentAmount > 0) {
+          // Refund saved amount back to wallet
+          get().updateBalance(plan.currentAmount);
+          
+          get().addTransaction({
+            type: 'hourglass-deduction',
+            amount: plan.currentAmount,
+            description: `HourGlass cancelled: ${plan.name} - Refund`,
+            status: 'confirmed',
+          });
+        }
+
+        set((state) => ({
+          hourGlassPlans: state.hourGlassPlans.map(p =>
+            p.id === planId ? { ...p, status: 'cancelled' } : p
+          ),
+        }));
+      },
+
+      processHourGlassDeductions: () => {
+        const state = get();
+        const now = new Date();
+
+        state.hourGlassPlans.forEach((plan) => {
+          if (plan.status !== 'active') return;
+          if (!state.user) return;
+
+          const nextDeduction = new Date(plan.nextDeductionDate);
+          const endDate = new Date(plan.endDate);
+
+          // Check if plan has ended
+          if (now >= endDate) {
+            set((state) => ({
+              hourGlassPlans: state.hourGlassPlans.map(p =>
+                p.id === plan.id ? { ...p, status: 'completed' } : p
+              ),
+            }));
+            
+            get().addNotification({
+              type: 'hourglass',
+              title: 'Savings Goal Reached!',
+              message: `${plan.name} - ₦${plan.currentAmount.toLocaleString()} saved!`,
+            });
+            return;
+          }
+
+          // Check if deduction is due
+          if (now >= nextDeduction) {
+            if (state.user.balance >= plan.deductionAmount) {
+              get().updateBalance(-plan.deductionAmount);
+              
+              let newNextDate = new Date(nextDeduction);
+              switch (plan.recurrence) {
+                case 'daily':
+                  newNextDate.setDate(newNextDate.getDate() + 1);
+                  break;
+                case 'weekly':
+                  newNextDate.setDate(newNextDate.getDate() + 7);
+                  break;
+                case 'monthly':
+                  newNextDate.setMonth(newNextDate.getMonth() + 1);
+                  break;
+              }
+
+              set((state) => ({
+                hourGlassPlans: state.hourGlassPlans.map(p =>
+                  p.id === plan.id 
+                    ? { 
+                        ...p, 
+                        currentAmount: p.currentAmount + plan.deductionAmount,
+                        nextDeductionDate: newNextDate,
+                      } 
+                    : p
+                ),
+              }));
+
+              get().addTransaction({
+                type: 'hourglass-deduction',
+                amount: -plan.deductionAmount,
+                description: `HourGlass: ${plan.name}`,
+                status: 'confirmed',
+              });
+            }
+          }
+        });
+      },
       
       addNotification: (notification) => {
         const newNotification: Notification = {
@@ -477,7 +664,7 @@ export const useStore = create<AppStore>()(
           read: false,
         };
         set((state) => ({
-          notifications: [newNotification, ...state.notifications].slice(0, 50), // Keep last 50
+          notifications: [newNotification, ...state.notifications].slice(0, 50),
         }));
       },
       
@@ -511,12 +698,12 @@ export const useStore = create<AppStore>()(
       
       seedDemo: () => {
         const demoUsers: User[] = [
-          { id: 'u_you', name: 'You', pin: '1234', balance: 10000, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=you' },
-          { id: 'u_alice', name: 'Alice', pin: '0000', balance: 5000, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alice' },
-          { id: 'u_bob', name: 'Bob', pin: '0000', balance: 7500, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=bob' },
-          { id: 'u_charlie', name: 'Charlie', pin: '0000', balance: 3000, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=charlie' },
-          { id: 'u_diana', name: 'Diana', pin: '0000', balance: 12000, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=diana' },
-          { id: 'u_evan', name: 'Evan', pin: '0000', balance: 8000, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=evan' },
+          { id: 'u_you', name: 'You', pin: '1234', balance: 50000, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=you', virtualAccountNumber: '0012345678', virtualAccountBank: 'SplitSpace Bank' },
+          { id: 'u_alice', name: 'Alice', pin: '0000', balance: 5000, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alice', virtualAccountNumber: '0023456789', virtualAccountBank: 'SplitSpace Bank' },
+          { id: 'u_bob', name: 'Bob', pin: '0000', balance: 7500, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=bob', virtualAccountNumber: '0034567890', virtualAccountBank: 'SplitSpace Bank' },
+          { id: 'u_charlie', name: 'Charlie', pin: '0000', balance: 3000, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=charlie', virtualAccountNumber: '0045678901', virtualAccountBank: 'SplitSpace Bank' },
+          { id: 'u_diana', name: 'Diana', pin: '0000', balance: 12000, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=diana', virtualAccountNumber: '0056789012', virtualAccountBank: 'SplitSpace Bank' },
+          { id: 'u_evan', name: 'Evan', pin: '0000', balance: 8000, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=evan', virtualAccountNumber: '0067890123', virtualAccountBank: 'SplitSpace Bank' },
         ];
         
         const now = new Date();
@@ -599,10 +786,26 @@ export const useStore = create<AppStore>()(
         ];
         
         const demoTransactions: Transaction[] = [
-          { id: 't1', type: 'topup', amount: 5000, description: 'Top-up ₦5000', date: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000), status: 'confirmed' },
+          { id: 't1', type: 'topup', amount: 5000, description: 'Added ₦5,000', date: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000), status: 'confirmed' },
           { id: 't2', type: 'send', amount: -1000, description: 'Sent to Bob: Coffee', date: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000), toUserId: 'u_bob', status: 'confirmed' },
           { id: 't3', type: 'room-contribution', amount: -5000, description: 'Contributed to Weekend Trip Fund', date: new Date(now.getTime() - 2 * 60 * 60 * 1000), roomId: 'room_a', status: 'confirmed' },
           { id: 't4', type: 'receive', amount: 2500, description: 'Received from Alice', date: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000), fromUserId: 'u_alice', status: 'confirmed' },
+        ];
+
+        const demoHourGlassPlans: HourGlassPlan[] = [
+          {
+            id: 'hg_1',
+            userId: 'u_you',
+            name: 'Emergency Fund',
+            targetAmount: 100000,
+            currentAmount: 15000,
+            endDate: new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000),
+            recurrence: 'weekly',
+            deductionAmount: 5000,
+            nextDeductionDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+            status: 'active',
+            createdAt: new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000),
+          },
         ];
         
         set({
@@ -610,13 +813,14 @@ export const useStore = create<AppStore>()(
           user: demoUsers[0],
           rooms: demoRooms,
           transactions: demoTransactions,
+          hourGlassPlans: demoHourGlassPlans,
           isAuthenticated: true,
           notifications: [
             {
               id: 'n1',
               type: 'contribution',
               title: 'Contribution Confirmed',
-              message: '₦5000 added to Weekend Trip Fund',
+              message: '₦5,000 added to Weekend Trip Fund',
               roomId: 'room_a',
               timestamp: new Date(now.getTime() - 2 * 60 * 60 * 1000),
               read: false,
@@ -630,6 +834,14 @@ export const useStore = create<AppStore>()(
               timestamp: new Date(now.getTime() - 30 * 60 * 1000),
               read: false,
             },
+            {
+              id: 'n3',
+              type: 'hourglass',
+              title: 'Weekly Savings',
+              message: 'Emergency Fund - ₦5,000 saved automatically',
+              timestamp: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+              read: true,
+            },
           ],
         });
       },
@@ -641,6 +853,7 @@ export const useStore = create<AppStore>()(
           rooms: [],
           transactions: [],
           notifications: [],
+          hourGlassPlans: [],
           isAuthenticated: false,
         });
       },
