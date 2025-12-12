@@ -14,11 +14,9 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
-
-import Wallet from './pages/Wallet';
+import HourGlass from "./pages/HourGlass";
 import Send from './pages/Send';
 import Receive from './pages/Receive';
-import TopUp from './pages/TopUp';
 
 const queryClient = new QueryClient();
 
@@ -28,38 +26,36 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => {
-  const { isAuthenticated, checkRoomUnlocks, settings } = useStore();
+  const { isAuthenticated, checkRoomUnlocks, processHourGlassDeductions, settings } = useStore();
 
-  // Apply dark mode on mount and when settings change
   useEffect(() => {
     document.documentElement.classList.toggle('dark', settings.darkMode);
   }, [settings.darkMode]);
 
-  // Auto-check room unlocks every 15 seconds
   useEffect(() => {
     if (!isAuthenticated) return;
 
     const interval = setInterval(() => {
       checkRoomUnlocks();
-    }, 15000);
+      processHourGlassDeductions();
+    }, 10000);
 
-    // Also check on visibility change (when user returns to tab)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         checkRoomUnlocks();
+        processHourGlassDeductions();
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Initial check
     checkRoomUnlocks();
+    processHourGlassDeductions();
 
     return () => {
       clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isAuthenticated, checkRoomUnlocks]);
+  }, [isAuthenticated, checkRoomUnlocks, processHourGlassDeductions]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -74,110 +70,20 @@ const App = () => {
                 isAuthenticated ? <Navigate to="/dashboard" replace /> : <Onboarding />
               }
             />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/money-rooms"
-              element={
-                <ProtectedRoute>
-                  <MoneyRooms />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/room/:id"
-              element={
-                <ProtectedRoute>
-                  <RoomDetail />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/rooms/:id"
-              element={
-                <ProtectedRoute>
-                  <RoomDetail />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/transactions"
-              element={
-                <ProtectedRoute>
-                  <Transactions />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute>
-                  <Admin />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/wallet"
-              element={
-                <ProtectedRoute>
-                  <Wallet />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/rooms"
-              element={
-                <ProtectedRoute>
-                  <MoneyRooms />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/send"
-              element={
-                <ProtectedRoute>
-                  <Send />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/receive"
-              element={
-                <ProtectedRoute>
-                  <Receive />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/topup"
-              element={
-                <ProtectedRoute>
-                  <TopUp />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/hourglass" element={<ProtectedRoute><HourGlass /></ProtectedRoute>} />
+            <Route path="/money-rooms" element={<ProtectedRoute><MoneyRooms /></ProtectedRoute>} />
+            <Route path="/rooms" element={<ProtectedRoute><MoneyRooms /></ProtectedRoute>} />
+            <Route path="/room/:id" element={<ProtectedRoute><RoomDetail /></ProtectedRoute>} />
+            <Route path="/rooms/:id" element={<ProtectedRoute><RoomDetail /></ProtectedRoute>} />
+            <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+            <Route path="/send" element={<ProtectedRoute><Send /></ProtectedRoute>} />
+            <Route path="/receive" element={<ProtectedRoute><Receive /></ProtectedRoute>} />
+            <Route path="/wallet" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/topup" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
