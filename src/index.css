@@ -2,64 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
-/* White / Navy / Black Professional Design System */
+/* Flat White / Navy / Black Banking Design System */
 
 @layer base {
   :root {
-    /* Base surfaces */
+    /* Core surfaces */
     --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
+    --foreground: 0 0% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card-foreground: 0 0% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover-foreground: 0 0% 12%;
 
-    /* Primary: Navy Blue (#003366) */
+    /* PRIMARY: Solid Navy Blue (#003366) */
     --primary: 210 100% 20%;
     --primary-foreground: 0 0% 100%;
 
-    /* Accent: Softer Navy (used sparingly) */
-    --accent: 210 60% 40%;
+    /* Accent = same navy (no creativity) */
+    --accent: 210 100% 20%;
     --accent-foreground: 0 0% 100%;
 
-    /* Secondary: Soft Black / Light Gray surfaces */
+    /* Secondary / muted surfaces */
     --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 10%;
+    --secondary-foreground: 0 0% 12%;
 
-    /* Muted UI elements */
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
 
-    /* Destructive (kept neutral, not dominant) */
-    --destructive: 0 70% 45%;
+    /* Destructive (kept neutral, not flashy) */
+    --destructive: 0 65% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders & inputs */
+    /* Inputs & borders */
     --border: 0 0% 90%;
     --input: 0 0% 90%;
 
-    /* Focus ring uses navy */
+    /* Focus ring = solid navy */
     --ring: 210 100% 20%;
 
-    /* Radius */
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    /* Sidebar */
+    /* Sidebar (OPay/Kuda style) */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 10%;
+    --sidebar-foreground: 0 0% 12%;
     --sidebar-primary: 210 100% 20%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 12%;
     --sidebar-border: 0 0% 90%;
     --sidebar-ring: 210 100% 20%;
   }
 
-  /* Dark mode (Navy-tinted, not pure inversion) */
+  /* Dark mode — still flat, no gradients */
   .dark {
-    --background: 0 0% 5%;
+    --background: 0 0% 6%;
     --foreground: 0 0% 95%;
 
     --card: 0 0% 10%;
@@ -68,11 +66,10 @@
     --popover: 0 0% 10%;
     --popover-foreground: 0 0% 95%;
 
-    /* Navy-highlighted primary */
-    --primary: 210 80% 65%;
+    --primary: 210 100% 65%;
     --primary-foreground: 0 0% 10%;
 
-    --accent: 210 60% 50%;
+    --accent: 210 100% 65%;
     --accent-foreground: 0 0% 10%;
 
     --secondary: 0 0% 15%;
@@ -86,16 +83,16 @@
 
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 210 80% 65%;
+    --ring: 210 100% 65%;
 
     --sidebar-background: 0 0% 8%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 210 80% 65%;
+    --sidebar-primary: 210 100% 65%;
     --sidebar-primary-foreground: 0 0% 10%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 210 80% 65%;
+    --sidebar-ring: 210 100% 65%;
   }
 }
 
@@ -105,80 +102,17 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased transition-colors duration-200;
+    @apply bg-background text-foreground font-sans antialiased;
   }
 
-  /* Banking-style shadows */
+  /* Flat banking shadows (subtle, not fancy) */
   .shadow-banking {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   }
 
   .shadow-banking-lg {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
   }
 }
 
-@layer utilities {
-  /* Navy gradient for headers / highlights */
-  .gradient-primary {
-    background: linear-gradient(
-      135deg,
-      hsl(210 100% 20%),
-      hsl(210 100% 35%)
-    );
-  }
-
-  /* Subtle reverse gradient (dark mode / overlays) */
-  .gradient-primary-reverse {
-    background: linear-gradient(
-      135deg,
-      hsl(210 80% 65%),
-      hsl(210 60% 45%)
-    );
-  }
-
-  /* Shimmer animation (neutral) */
-  .animate-shimmer {
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite;
-  }
-
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
-  }
-
-  /* Counter animation */
-  .animate-counter {
-    animation: counter 0.6s ease-out;
-  }
-
-  @keyframes counter {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* Subtle emphasis pulse (not success-colored) */
-  @keyframes emphasis-pulse {
-    0%, 100% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.03);
-    }
-  }
-
-  .animate-emphasis-pulse {
-    animation: emphasis-pulse 0.5s ease-in-out;
-  }
-}
+/* NO gradients. NO decorative utilities. */
