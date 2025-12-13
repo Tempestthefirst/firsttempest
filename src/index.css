@@ -2,101 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Black/White/Green Design System */
+/* White / Navy / Black Professional Design System */
 
 @layer base {
   :root {
-    /* Pure Black/White with Green accent */
+    /* Base surfaces */
     --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    --foreground: 0 0% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card-foreground: 0 0% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover-foreground: 0 0% 10%;
 
-    /* Pure Black as primary */
-    --primary: 0 0% 0%;
+    /* Primary: Navy Blue (#003366) */
+    --primary: 210 100% 20%;
     --primary-foreground: 0 0% 100%;
 
-    /* Solid Green accent */
-    --accent: 142 76% 36%;
+    /* Accent: Softer Navy (used sparingly) */
+    --accent: 210 60% 40%;
     --accent-foreground: 0 0% 100%;
 
-    /* Secondary is also black */
+    /* Secondary: Soft Black / Light Gray surfaces */
     --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 0%;
+    --secondary-foreground: 0 0% 10%;
 
+    /* Muted UI elements */
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
 
-    --destructive: 0 84% 60%;
+    /* Destructive (kept neutral, not dominant) */
+    --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 100%;
 
+    /* Borders & inputs */
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 142 76% 36%;
 
+    /* Focus ring uses navy */
+    --ring: 210 100% 20%;
+
+    /* Radius */
     --radius: 1rem;
 
-    /* Success/positive states use green */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-
+    /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 0 0% 0%;
+    --sidebar-foreground: 0 0% 10%;
+    --sidebar-primary: 210 100% 20%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-accent-foreground: 0 0% 10%;
     --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 142 76% 36%;
+    --sidebar-ring: 210 100% 20%;
   }
 
+  /* Dark mode (Navy-tinted, not pure inversion) */
   .dark {
-    /* Inverted: White on Black with Green accent */
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
+    --background: 0 0% 5%;
+    --foreground: 0 0% 95%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 95%;
 
-    /* White as primary in dark mode */
-    --primary: 0 0% 100%;
-    --primary-foreground: 0 0% 0%;
+    /* Navy-highlighted primary */
+    --primary: 210 80% 65%;
+    --primary-foreground: 0 0% 10%;
 
-    /* Green accent stays solid */
-    --accent: 142 76% 42%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 210 60% 50%;
+    --accent-foreground: 0 0% 10%;
 
     --secondary: 0 0% 15%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary-foreground: 0 0% 95%;
 
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 65%;
 
-    --destructive: 0 63% 50%;
+    --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 142 76% 42%;
+    --ring: 210 80% 65%;
 
-    --success: 142 76% 42%;
-    --success-foreground: 0 0% 100%;
-    
-    --sidebar-background: 0 0% 5%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 210 80% 65%;
+    --sidebar-primary-foreground: 0 0% 10%;
     --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 142 76% 42%;
+    --sidebar-ring: 210 80% 65%;
   }
 }
 
@@ -108,46 +107,42 @@
   body {
     @apply bg-background text-foreground font-sans antialiased transition-colors duration-200;
   }
-  
-  /* Banking UI enhancements */
+
+  /* Banking-style shadows */
   .shadow-banking {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
-  
+
   .shadow-banking-lg {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   }
 }
 
 @layer utilities {
-  /* Black to white gradient */
+  /* Navy gradient for headers / highlights */
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 30%));
-  }
-  
-  /* White to black gradient (for dark mode) */
-  .gradient-primary-reverse {
-    background: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 0% 70%));
-  }
-  
-  /* Success/Green button */
-  .bg-success {
-    background-color: hsl(var(--success));
-  }
-  
-  .text-success {
-    color: hsl(var(--success));
+    background: linear-gradient(
+      135deg,
+      hsl(210 100% 20%),
+      hsl(210 100% 35%)
+    );
   }
 
-  .border-success {
-    border-color: hsl(var(--success));
+  /* Subtle reverse gradient (dark mode / overlays) */
+  .gradient-primary-reverse {
+    background: linear-gradient(
+      135deg,
+      hsl(210 80% 65%),
+      hsl(210 60% 45%)
+    );
   }
-  
+
+  /* Shimmer animation (neutral) */
   .animate-shimmer {
     background-size: 200% 100%;
     animation: shimmer 2s infinite;
   }
-  
+
   @keyframes shimmer {
     0% {
       background-position: -200% 0;
@@ -156,11 +151,12 @@
       background-position: 200% 0;
     }
   }
-  
+
+  /* Counter animation */
   .animate-counter {
     animation: counter 0.6s ease-out;
   }
-  
+
   @keyframes counter {
     from {
       opacity: 0;
@@ -172,17 +168,17 @@
     }
   }
 
-  /* Success pulse animation */
-  @keyframes success-pulse {
+  /* Subtle emphasis pulse (not success-colored) */
+  @keyframes emphasis-pulse {
     0%, 100% {
       transform: scale(1);
     }
     50% {
-      transform: scale(1.05);
+      transform: scale(1.03);
     }
   }
 
-  .animate-success-pulse {
-    animation: success-pulse 0.5s ease-in-out;
+  .animate-emphasis-pulse {
+    animation: emphasis-pulse 0.5s ease-in-out;
   }
 }
