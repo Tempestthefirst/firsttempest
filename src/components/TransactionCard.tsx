@@ -1,16 +1,28 @@
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
-import { Transaction } from '@/store/useStore';
-import { ArrowUpRight, ArrowDownLeft, Plus, Users, Unlock } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Plus, Users, Unlock, Hourglass, RefreshCw } from 'lucide-react';
+
+interface TransactionData {
+  id: string;
+  type: string;
+  amount: number;
+  description: string;
+  date: Date;
+  status?: string;
+}
 
 interface TransactionCardProps {
-  transaction: Transaction;
+  transaction: TransactionData;
 }
 
 export const TransactionCard = ({ transaction }: TransactionCardProps) => {
+  // Normalize type (handle both dash and underscore formats)
+  const normalizedType = transaction.type.replace(/_/g, '-');
+  
   const getIcon = () => {
-    switch (transaction.type) {
+    switch (normalizedType) {
       case 'send':
+      case 'transfer':
         return <ArrowUpRight className="w-5 h-5" strokeWidth={2.5} />;
       case 'receive':
         return <ArrowDownLeft className="w-5 h-5" strokeWidth={2.5} />;
@@ -19,7 +31,12 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
       case 'room-contribution':
         return <Users className="w-5 h-5" strokeWidth={2.5} />;
       case 'room-unlock':
+      case 'room-refund':
         return <Unlock className="w-5 h-5" strokeWidth={2.5} />;
+      case 'hourglass-deduction':
+        return <Hourglass className="w-5 h-5" strokeWidth={2.5} />;
+      default:
+        return <RefreshCw className="w-5 h-5" strokeWidth={2.5} />;
     }
   };
 
@@ -29,8 +46,9 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
   };
 
   const getBgClass = () => {
-    switch (transaction.type) {
+    switch (normalizedType) {
       case 'send':
+      case 'transfer':
         return 'bg-red-50 text-red-600';
       case 'receive':
         return 'bg-green-50 text-green-600';
@@ -39,7 +57,12 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
       case 'room-contribution':
         return 'bg-purple-50 text-purple-600';
       case 'room-unlock':
+      case 'room-refund':
         return 'bg-yellow-50 text-yellow-600';
+      case 'hourglass-deduction':
+        return 'bg-orange-50 text-orange-600';
+      default:
+        return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -67,7 +90,7 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
           </div>
         </div>
         <span className={`font-bold text-lg ${getColorClass()}`}>
-          {transaction.amount > 0 ? '+' : ''}${Math.abs(transaction.amount).toFixed(2)}
+          {transaction.amount > 0 ? '+' : ''}₦{Math.abs(transaction.amount).toLocaleString()}
         </span>
       </motion.div>
     </Card>

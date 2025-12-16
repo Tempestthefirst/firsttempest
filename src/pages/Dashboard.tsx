@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useStore } from '@/store/useStore';
+import { useWallet } from '@/hooks/useWallet';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -35,9 +37,10 @@ import { TransactionSkeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
 export default function Dashboard() {
-  const { user, transactions, topUp } = useStore();
+  const { wallet, loading: walletLoading, topUp, refetch: refetchWallet } = useWallet();
+  const { transactions, loading: txLoading } = useTransactions();
+  const { profile } = useProfile();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
   const [showBalance, setShowBalance] = useState(true);
   const [isAddMoneyOpen, setIsAddMoneyOpen] = useState(false);
   const [addMoneyTab, setAddMoneyTab] = useState<'card' | 'transfer'>('card');
@@ -54,14 +57,19 @@ export default function Dashboard() {
   const [transferLoading, setTransferLoading] = useState(false);
   const [transferAmount, setTransferAmount] = useState('');
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
+  const isLoading = walletLoading || txLoading;
 
-  if (!user) return null;
-
-  const recentTransactions = transactions.slice(0, 5);
+  // Transform DB transactions to match TransactionCard format
+  const recentTransactions = transactions.slice(0, 5).map(tx => ({
+    id: tx.id,
+    type: tx.type as 'send' | 'receive' | 'topup' | 'room-contribution' | 'room-unlock' | 'transfer' | 'settlement' | 'hourglass-deduction',
+    amount: tx.type === 'send' || tx.type === 'transfer' || tx.type === 'room_contribution' 
+      ? -Number(tx.amount) 
+      : Number(tx.amount),
+    description: tx.description || tx.type,
+    date: new Date(tx.created_at),
+    status: tx.status as 'pending' | 'confirmed' | 'refunded',
+  }));
 
   const quickActions = [
     { icon: Send, label: 'Send', action: () => navigate('/send') },
@@ -93,16 +101,21 @@ export default function Dashboard() {
     }
 
     setCardLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    await topUp(amount);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    const result = await topUp(amount);
     setCardLoading(false);
-    setIsAddMoneyOpen(false);
-    setCardNumber('');
-    setExpiry('');
-    setCvv('');
-    setCardName('');
-    setCardAmount('');
-    toast.success(`₦${amount.toLocaleString()} added successfully!`);
+    
+    if (result.success) {
+      setIsAddMoneyOpen(false);
+      setCardNumber('');
+      setExpiry('');
+      setCvv('');
+      setCardName('');
+      setCardAmount('');
+      toast.success(`₦${amount.toLocaleString()} added successfully!`);
+    } else {
+      toast.error(result.error || 'Failed to add money');
+    }
   };
 
   const handleTransferConfirm = async () => {
@@ -113,12 +126,17 @@ export default function Dashboard() {
     }
 
     setTransferLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    await topUp(amount);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const result = await topUp(amount);
     setTransferLoading(false);
-    setIsAddMoneyOpen(false);
-    setTransferAmount('');
-    toast.success(`₦${amount.toLocaleString()} received!`);
+    
+    if (result.success) {
+      setIsAddMoneyOpen(false);
+      setTransferAmount('');
+      toast.success(`₦${amount.toLocaleString()} received!`);
+    } else {
+      toast.error(result.error || 'Failed to confirm transfer');
+    }
   };
 
   const copyToClipboard = (text: string, label: string) => {
@@ -181,9 +199,9 @@ export default function Dashboard() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              {showBalance ? `₦${user.balance.toLocaleString()}` : '₦••••••'}
+              {showBalance ? `₦${(wallet?.balance || 0).toLocaleString()}` : '₦••••••'}
             </motion.p>
-            <p className="text-sm opacity-50 mt-2">{user.name}</p>
+            <p className="text-sm opacity-50 mt-2">{profile?.full_name || 'Loading...'}</p>
           </Card>
         </motion.div>
 
@@ -377,20 +395,20 @@ export default function Dashboard() {
                 <div className="p-4 bg-muted/50 rounded-xl space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Bank</span>
-                    <span className="font-medium">{user.virtualAccountBank || 'SplitSpace Bank'}</span>
+                    <span className="font-medium">{wallet?.virtual_account_bank || 'FirstPay'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Account Name</span>
-                    <span className="font-medium">{user.name}</span>
+                    <span className="font-medium">{profile?.full_name || 'Loading...'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Account Number</span>
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-bold text-lg">
-                        {user.virtualAccountNumber || '0012345678'}
+                        {wallet?.virtual_account_number || '0012345678'}
                       </span>
                       <button
-                        onClick={() => copyToClipboard(user.virtualAccountNumber || '0012345678', 'Account number')}
+                        onClick={() => copyToClipboard(wallet?.virtual_account_number || '0012345678', 'Account number')}
                         className="p-1.5 rounded-lg hover:bg-muted transition-colors"
                         aria-label="Copy account number"
                       >

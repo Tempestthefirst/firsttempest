@@ -315,13 +315,36 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      contribute_to_room: {
+        Args: { p_amount: number; p_room_id: string }
+        Returns: Json
+      }
       generate_invite_code: { Args: never; Returns: string }
+      get_my_wallet: {
+        Args: never
+        Returns: {
+          balance: number
+          currency: string
+          id: string
+          virtual_account_bank: string
+          virtual_account_number: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      join_room_by_code: { Args: { p_invite_code: string }; Returns: Json }
+      topup_wallet: {
+        Args: { p_amount: number; p_reference?: string }
+        Returns: Json
+      }
+      transfer_money: {
+        Args: { p_amount: number; p_description?: string; p_to_user_id: string }
+        Returns: Json
       }
     }
     Enums: {
