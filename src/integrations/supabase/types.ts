@@ -14,6 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      hourglass_plans: {
+        Row: {
+          created_at: string
+          current_saved: number
+          deduction_amount: number
+          end_date: string
+          id: string
+          last_deduction_date: string | null
+          name: string
+          next_deduction_date: string
+          recurrence: Database["public"]["Enums"]["hourglass_recurrence"]
+          status: Database["public"]["Enums"]["hourglass_status"]
+          target_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_saved?: number
+          deduction_amount: number
+          end_date: string
+          id?: string
+          last_deduction_date?: string | null
+          name?: string
+          next_deduction_date: string
+          recurrence: Database["public"]["Enums"]["hourglass_recurrence"]
+          status?: Database["public"]["Enums"]["hourglass_status"]
+          target_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_saved?: number
+          deduction_amount?: number
+          end_date?: string
+          id?: string
+          last_deduction_date?: string | null
+          name?: string
+          next_deduction_date?: string
+          recurrence?: Database["public"]["Enums"]["hourglass_recurrence"]
+          status?: Database["public"]["Enums"]["hourglass_status"]
+          target_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      money_rooms: {
+        Row: {
+          created_at: string
+          creator_id: string
+          current_amount: number
+          description: string | null
+          id: string
+          invite_code: string
+          name: string
+          status: Database["public"]["Enums"]["room_status"]
+          target_amount: number
+          unlock_date: string | null
+          unlock_type: Database["public"]["Enums"]["room_unlock_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          current_amount?: number
+          description?: string | null
+          id?: string
+          invite_code: string
+          name: string
+          status?: Database["public"]["Enums"]["room_status"]
+          target_amount: number
+          unlock_date?: string | null
+          unlock_type: Database["public"]["Enums"]["room_unlock_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          current_amount?: number
+          description?: string | null
+          id?: string
+          invite_code?: string
+          name?: string
+          status?: Database["public"]["Enums"]["room_status"]
+          target_amount?: number
+          unlock_date?: string | null
+          unlock_type?: Database["public"]["Enums"]["room_unlock_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -50,6 +143,119 @@ export type Database = {
         }
         Relationships: []
       }
+      room_contributions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          room_id: string
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          room_id: string
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          room_id?: string
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_contributions_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "money_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_contributions_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_members: {
+        Row: {
+          id: string
+          joined_at: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_members_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "money_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          from_user_id: string | null
+          id: string
+          metadata: Json | null
+          reference: string | null
+          room_id: string | null
+          status: Database["public"]["Enums"]["transaction_status"]
+          to_user_id: string | null
+          type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          from_user_id?: string | null
+          id?: string
+          metadata?: Json | null
+          reference?: string | null
+          room_id?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          to_user_id?: string | null
+          type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          from_user_id?: string | null
+          id?: string
+          metadata?: Json | null
+          reference?: string | null
+          room_id?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          to_user_id?: string | null
+          type?: Database["public"]["Enums"]["transaction_type"]
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -71,11 +277,45 @@ export type Database = {
         }
         Relationships: []
       }
+      wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          updated_at: string
+          user_id: string
+          virtual_account_bank: string | null
+          virtual_account_number: string | null
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          virtual_account_bank?: string | null
+          virtual_account_number?: string | null
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          virtual_account_bank?: string | null
+          virtual_account_number?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_invite_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -86,6 +326,20 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      hourglass_recurrence: "daily" | "weekly" | "monthly"
+      hourglass_status: "active" | "paused" | "completed" | "cancelled"
+      room_status: "active" | "locked" | "unlocked" | "cancelled"
+      room_unlock_type: "target_reached" | "date_reached" | "manual"
+      transaction_status: "pending" | "completed" | "failed"
+      transaction_type:
+        | "topup"
+        | "transfer"
+        | "send"
+        | "receive"
+        | "room_contribution"
+        | "room_unlock"
+        | "room_refund"
+        | "hourglass_deduction"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -214,6 +468,21 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      hourglass_recurrence: ["daily", "weekly", "monthly"],
+      hourglass_status: ["active", "paused", "completed", "cancelled"],
+      room_status: ["active", "locked", "unlocked", "cancelled"],
+      room_unlock_type: ["target_reached", "date_reached", "manual"],
+      transaction_status: ["pending", "completed", "failed"],
+      transaction_type: [
+        "topup",
+        "transfer",
+        "send",
+        "receive",
+        "room_contribution",
+        "room_unlock",
+        "room_refund",
+        "hourglass_deduction",
+      ],
     },
   },
 } as const
