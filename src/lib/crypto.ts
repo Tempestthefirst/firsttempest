@@ -1,18 +1,25 @@
 /**
  * Secure PIN hashing utilities using Web Crypto API
- * Uses PBKDF2 with SHA-256 for key derivation
+ * Uses PBKDF2 with SHA-256 for key derivation with unique per-user salts
  */
 
-const SALT = 'firstpay-pin-salt-v1'; // In production, use unique salt per user stored in DB
 const ITERATIONS = 100000;
 
 /**
- * Hash a PIN using PBKDF2
+ * Generate a unique random salt for a new user
  */
-export async function hashPin(pin: string): Promise<string> {
+export function generateSalt(): string {
+  const saltArray = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(saltArray).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Hash a PIN using PBKDF2 with a unique salt
+ */
+export async function hashPin(pin: string, salt: string): Promise<string> {
   const encoder = new TextEncoder();
   const pinData = encoder.encode(pin);
-  const saltData = encoder.encode(SALT);
+  const saltData = encoder.encode(salt);
 
   // Import the PIN as a key
   const keyMaterial = await crypto.subtle.importKey(
@@ -43,9 +50,9 @@ export async function hashPin(pin: string): Promise<string> {
 }
 
 /**
- * Verify a PIN against a stored hash
+ * Verify a PIN against a stored hash using the user's salt
  */
-export async function verifyPin(pin: string, storedHash: string): Promise<boolean> {
-  const computedHash = await hashPin(pin);
+export async function verifyPin(pin: string, storedHash: string, salt: string): Promise<boolean> {
+  const computedHash = await hashPin(pin, salt);
   return computedHash === storedHash;
 }
