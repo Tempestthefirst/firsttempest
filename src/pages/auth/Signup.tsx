@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { hashPin } from '@/lib/crypto';
 import SignupStep1 from './signup/SignupStep1';
 import SignupStep2 from './signup/SignupStep2';
 import SignupStep3 from './signup/SignupStep3';
@@ -88,14 +89,17 @@ export default function Signup() {
         // Continue anyway - photo is optional for MVP
       }
 
-      // 3. Create profile
+      // 3. Hash the PIN securely
+      const hashedPin = signupData.pin ? await hashPin(signupData.pin) : null;
+
+      // 4. Create profile with hashed PIN
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: userId,
           full_name: signupData.fullName,
           phone_number: phoneClean,
-          pin_hash: signupData.pin, // In production, use proper hashing
+          pin_hash: hashedPin,
           identity_photo_url: uploadError ? null : fileName,
         });
 

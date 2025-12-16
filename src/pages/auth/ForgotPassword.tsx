@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
+import { verifyPin } from '@/lib/crypto';
 import logo from '@/assets/logo.png';
 
 export default function ForgotPassword() {
@@ -46,8 +47,15 @@ export default function ForgotPassword() {
         return;
       }
 
-      // Simple PIN verification (in production, use proper hashing)
-      if (profile.pin_hash !== pin) {
+      // Securely verify PIN using hash comparison
+      if (!profile.pin_hash) {
+        toast.error('No PIN set for this account');
+        setLoading(false);
+        return;
+      }
+
+      const isPinValid = await verifyPin(pin, profile.pin_hash);
+      if (!isPinValid) {
         toast.error('Invalid PIN');
         setLoading(false);
         return;
