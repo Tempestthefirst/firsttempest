@@ -23,6 +23,7 @@ export type Database = {
           is_verified: boolean | null
           phone_number: string
           pin_hash: string | null
+          pin_salt: string | null
           updated_at: string
         }
         Insert: {
@@ -33,6 +34,7 @@ export type Database = {
           is_verified?: boolean | null
           phone_number: string
           pin_hash?: string | null
+          pin_salt?: string | null
           updated_at?: string
         }
         Update: {
@@ -43,6 +45,7 @@ export type Database = {
           is_verified?: boolean | null
           phone_number?: string
           pin_hash?: string | null
+          pin_salt?: string | null
           updated_at?: string
         }
         Relationships: []

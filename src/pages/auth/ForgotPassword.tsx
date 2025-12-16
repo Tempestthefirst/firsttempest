@@ -37,7 +37,7 @@ export default function ForgotPassword() {
       
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('id, pin_hash')
+        .select('id, pin_hash, pin_salt')
         .eq('phone_number', phoneClean)
         .maybeSingle();
 
@@ -48,13 +48,13 @@ export default function ForgotPassword() {
       }
 
       // Securely verify PIN using hash comparison
-      if (!profile.pin_hash) {
+      if (!profile.pin_hash || !profile.pin_salt) {
         toast.error('No PIN set for this account');
         setLoading(false);
         return;
       }
 
-      const isPinValid = await verifyPin(pin, profile.pin_hash);
+      const isPinValid = await verifyPin(pin, profile.pin_hash, profile.pin_salt);
       if (!isPinValid) {
         toast.error('Invalid PIN');
         setLoading(false);
