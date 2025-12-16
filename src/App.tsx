@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
+import { useAdminRole } from "@/hooks/useAdminRole";
 
 // Pages
 import SplashScreen from "./pages/SplashScreen";
@@ -37,6 +38,29 @@ const AuthRoute = ({ children, session }: { children: React.ReactNode; session: 
   if (session) {
     return <Navigate to="/dashboard" replace />;
   }
+  return <>{children}</>;
+};
+
+// Admin route that checks for admin role from database
+const AdminRoute = ({ children, session }: { children: React.ReactNode; session: Session | null }) => {
+  const { isAdmin, loading } = useAdminRole();
+
+  if (!session) {
+    return <Navigate to="/auth/login" replace />;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Checking permissions...</div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return <>{children}</>;
 };
 
@@ -112,7 +136,7 @@ const App = () => {
             <Route path="/transactions" element={<ProtectedRoute session={session}><Transactions /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute session={session}><Profile /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute session={session}><Settings /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute session={session}><Admin /></ProtectedRoute>} />
+            <Route path="/admin" element={<AdminRoute session={session}><Admin /></AdminRoute>} />
             <Route path="/send" element={<ProtectedRoute session={session}><Send /></ProtectedRoute>} />
             <Route path="/receive" element={<ProtectedRoute session={session}><Receive /></ProtectedRoute>} />
             
