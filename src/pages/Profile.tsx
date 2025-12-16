@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
+import { useAdminRole } from '@/hooks/useAdminRole';
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
 import { BottomNav } from '@/components/BottomNav';
@@ -12,6 +13,7 @@ import { toast } from 'sonner';
 
 export default function Profile() {
   const { user, logout, transactions, rooms } = useStore();
+  const { isAdmin } = useAdminRole();
   const navigate = useNavigate();
 
   if (!user) return null;
@@ -115,13 +117,15 @@ export default function Profile() {
             >
               Settings
             </Button>
-            <Button
-              variant="outline"
-              className="w-full h-12"
-              onClick={() => navigate('/admin')}
-            >
-              Admin Panel
-            </Button>
+            {isAdmin && (
+              <Button
+                variant="outline"
+                className="w-full h-12"
+                onClick={() => navigate('/admin')}
+              >
+                Admin Panel
+              </Button>
+            )}
             <Button
               variant="destructive"
               className="w-full h-12"
