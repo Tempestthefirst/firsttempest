@@ -32,16 +32,33 @@ export default function ForgotPassword() {
     setLoading(true);
     
     try {
-      // Find user by phone number and verify PIN
-      const phoneClean = phone.replace(/[^0-9]/g, '');
+      // Normalize phone number - remove all non-digit characters
+      let phoneClean = phone.replace(/[^0-9]/g, '');
+      
+      // Handle common Nigerian phone format variations
+      // Remove leading 234 country code if present
+      if (phoneClean.startsWith('234') && phoneClean.length > 10) {
+        phoneClean = '0' + phoneClean.substring(3);
+      }
+      // Add leading 0 if missing (for numbers like 8012345678)
+      if (phoneClean.length === 10 && !phoneClean.startsWith('0')) {
+        phoneClean = '0' + phoneClean;
+      }
       
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('id, pin_hash, pin_salt')
+        .select('id, pin_hash, pin_salt, phone_number')
         .eq('phone_number', phoneClean)
         .maybeSingle();
 
-      if (profileError || !profile) {
+      if (profileError) {
+        console.error('Database error:', profileError);
+        toast.error('Unable to verify account. Please try again.');
+        setLoading(false);
+        return;
+      }
+
+      if (!profile) {
         toast.error('No account found with this phone number');
         setLoading(false);
         return;
@@ -49,14 +66,14 @@ export default function ForgotPassword() {
 
       // Securely verify PIN using hash comparison
       if (!profile.pin_hash || !profile.pin_salt) {
-        toast.error('No PIN set for this account');
+        toast.error('No PIN has been set for this account. Please contact support.');
         setLoading(false);
         return;
       }
 
       const isPinValid = await verifyPin(pin, profile.pin_hash, profile.pin_salt);
       if (!isPinValid) {
-        toast.error('Invalid PIN');
+        toast.error('Incorrect PIN. Please try again.');
         setLoading(false);
         return;
       }
@@ -70,7 +87,8 @@ export default function ForgotPassword() {
       toast.success('PIN verified! Please use your password to login.');
       navigate('/auth/login');
     } catch (err) {
-      toast.error('An unexpected error occurred');
+      console.error('PIN verification error:', err);
+      toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
