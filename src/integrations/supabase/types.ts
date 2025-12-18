@@ -346,6 +346,10 @@ export type Database = {
         Args: { p_amount: number; p_description?: string; p_to_user_id: string }
         Returns: Json
       }
+      verify_pin_for_password_reset: {
+        Args: { p_phone: string; p_pin: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

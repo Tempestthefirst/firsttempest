@@ -10,6 +10,14 @@ import { ArrowLeft } from 'lucide-react';
 import { verifyPin } from '@/lib/crypto';
 import logo from '@/assets/logo.png';
 
+interface PinVerificationResult {
+  success: boolean;
+  error?: string;
+  user_id?: string;
+  pin_hash?: string;
+  pin_salt?: string;
+}
+
 export default function ForgotPassword() {
   const [phone, setPhone] = useState('');
   const [pin, setPin] = useState('');
@@ -32,58 +40,44 @@ export default function ForgotPassword() {
     setLoading(true);
     
     try {
-      // Normalize phone number - remove all non-digit characters
-      let phoneClean = phone.replace(/[^0-9]/g, '');
-      
-      // Handle common Nigerian phone format variations
-      // Remove leading 234 country code if present
-      if (phoneClean.startsWith('234') && phoneClean.length > 10) {
-        phoneClean = '0' + phoneClean.substring(3);
-      }
-      // Add leading 0 if missing (for numbers like 8012345678)
-      if (phoneClean.length === 10 && !phoneClean.startsWith('0')) {
-        phoneClean = '0' + phoneClean;
-      }
-      
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, pin_hash, pin_salt, phone_number')
-        .eq('phone_number', phoneClean)
-        .maybeSingle();
+      // Use secure server-side RPC for PIN verification
+      // This prevents direct client access to pin_hash and pin_salt columns
+      const { data, error: rpcError } = await supabase.rpc('verify_pin_for_password_reset', {
+        p_phone: phone,
+        p_pin: pin
+      });
 
-      if (profileError) {
-        console.error('Database error:', profileError);
+      if (rpcError) {
+        console.error('RPC error:', rpcError);
         toast.error('Unable to verify account. Please try again.');
         setLoading(false);
         return;
       }
 
-      if (!profile) {
-        toast.error('No account found with this phone number');
+      const result = data as unknown as PinVerificationResult;
+
+      if (!result.success) {
+        toast.error(result.error || 'Verification failed');
         setLoading(false);
         return;
       }
 
-      // Securely verify PIN using hash comparison
-      if (!profile.pin_hash || !profile.pin_salt) {
+      // Verify PIN client-side using the returned hash/salt from RPC
+      // The RPC controls access - users can't directly query the profiles table for these fields
+      if (!result.pin_hash || !result.pin_salt) {
         toast.error('No PIN has been set for this account. Please contact support.');
         setLoading(false);
         return;
       }
 
-      const isPinValid = await verifyPin(pin, profile.pin_hash, profile.pin_salt);
+      const isPinValid = await verifyPin(pin, result.pin_hash, result.pin_salt);
       if (!isPinValid) {
         toast.error('Incorrect PIN. Please try again.');
         setLoading(false);
         return;
       }
 
-      // PIN verified - log in using magic link or session
-      // For MVP, we'll use the phone-based email format
-      const email = `${phoneClean}@firstpay.user`;
-      
-      // Since we can't log in without password in this flow,
-      // we'll show a success and redirect to login
+      // PIN verified - redirect to login
       toast.success('PIN verified! Please use your password to login.');
       navigate('/auth/login');
     } catch (err) {

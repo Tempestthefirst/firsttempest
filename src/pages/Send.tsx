@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useStore } from '@/store/useStore';
+import { supabase } from '@/integrations/supabase/client';
+import { useWallet } from '@/hooks/useWallet';
 import { Header } from '@/components/Header';
-import { BackButton } from '@/components/BackButton';
 import { BottomNav } from '@/components/BottomNav';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,36 +16,74 @@ import confetti from 'canvas-confetti';
 
 type Step = 'recipient' | 'amount' | 'note' | 'confirm' | 'success';
 
+interface UserProfile {
+  id: string;
+  full_name: string;
+  phone_number: string;
+}
+
 export default function Send() {
   const navigate = useNavigate();
-  const { user, allUsers, sendMoney } = useStore();
+  const { wallet, transfer } = useWallet();
   const [step, setStep] = useState<Step>('recipient');
-  const [selectedUser, setSelectedUser] = useState<typeof allUsers[0] | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [availableUsers, setAvailableUsers] = useState<UserProfile[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
-  if (!user) return null;
+  // Fetch users from database
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoadingUsers(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
-  const availableUsers = allUsers.filter(u => 
-    u.id !== user.id && 
-    u.name.toLowerCase().includes(searchQuery.toLowerCase())
+        // Fetch other users' profiles (excluding current user)
+        const { data: profiles, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, phone_number')
+          .neq('id', user.id);
+
+        if (error) {
+          console.error('Error fetching users:', error);
+          return;
+        }
+
+        setAvailableUsers(profiles || []);
+      } catch (err) {
+        console.error('Error:', err);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const filteredUsers = availableUsers.filter(u =>
+    u.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    u.phone_number.includes(searchQuery)
   );
 
   const handleSend = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser || !wallet) return;
     
     const amountNum = parseFloat(amount);
-    if (amountNum > user.balance) {
+    if (amountNum > wallet.balance) {
       toast.error('Insufficient balance');
       return;
     }
 
     setIsLoading(true);
     try {
-      const success = await sendMoney(selectedUser.id, amountNum, note || 'Money transfer');
-      if (success) {
+      // Use secure database RPC for transfer
+      const result = await transfer(selectedUser.id, amountNum, note || 'Money transfer');
+      
+      if (result.success) {
         setStep('success');
         confetti({
           particleCount: 100,
@@ -54,7 +92,7 @@ export default function Send() {
           colors: ['#22c55e', '#16a34a', '#15803d'],
         });
       } else {
-        toast.error('Transfer failed');
+        toast.error(result.error || 'Transfer failed');
       }
     } catch {
       toast.error('Something went wrong');
@@ -84,6 +122,14 @@ export default function Send() {
     animate: { opacity: 1, x: 0 },
     exit: { opacity: 0, x: -50 },
   };
+
+  if (!wallet) {
+    return (
+      <div className="min-h-screen pb-24 bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-24 bg-background">
@@ -125,7 +171,7 @@ export default function Send() {
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
-                  placeholder="Search by name..."
+                  placeholder="Search by name or phone..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 h-12"
@@ -134,28 +180,32 @@ export default function Send() {
 
               <Card className="border-0 shadow-banking-lg overflow-hidden">
                 <div className="divide-y divide-border max-h-[50vh] overflow-y-auto">
-                  {availableUsers.map((recipient) => (
-                    <motion.button
-                      key={recipient.id}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        setSelectedUser(recipient);
-                        setStep('amount');
-                      }}
-                      className="w-full p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
-                    >
-                      <Avatar className="w-12 h-12">
-                        <AvatarImage src={recipient.avatar} />
-                        <AvatarFallback>{recipient.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="font-semibold">{recipient.name}</p>
-                        <p className="text-sm text-muted-foreground">ID: {recipient.id}</p>
-                      </div>
-                      <ArrowRight className="w-5 h-5 text-muted-foreground" />
-                    </motion.button>
-                  ))}
-                  {availableUsers.length === 0 && (
+                  {loadingUsers ? (
+                    <div className="p-8 text-center">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+                    </div>
+                  ) : filteredUsers.length > 0 ? (
+                    filteredUsers.map((recipient) => (
+                      <motion.button
+                        key={recipient.id}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          setSelectedUser(recipient);
+                          setStep('amount');
+                        }}
+                        className="w-full p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
+                      >
+                        <Avatar className="w-12 h-12">
+                          <AvatarFallback>{recipient.full_name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="font-semibold">{recipient.full_name}</p>
+                          <p className="text-sm text-muted-foreground">{recipient.phone_number}</p>
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-muted-foreground" />
+                      </motion.button>
+                    ))
+                  ) : (
                     <p className="text-center text-muted-foreground py-8">No users found</p>
                   )}
                 </div>
@@ -175,10 +225,9 @@ export default function Send() {
             >
               <div className="text-center mb-8">
                 <Avatar className="w-16 h-16 mx-auto mb-3">
-                  <AvatarImage src={selectedUser?.avatar} />
-                  <AvatarFallback>{selectedUser?.name[0]}</AvatarFallback>
+                  <AvatarFallback>{selectedUser?.full_name[0]}</AvatarFallback>
                 </Avatar>
-                <p className="font-semibold">{selectedUser?.name}</p>
+                <p className="font-semibold">{selectedUser?.full_name}</p>
               </div>
 
               <Card className="p-6 border-0 shadow-banking-lg">
@@ -199,7 +248,7 @@ export default function Send() {
                   />
                 </div>
                 <p className="text-center text-sm text-muted-foreground">
-                  Available: ₦{user.balance.toLocaleString()}
+                  Available: ₦{wallet.balance.toLocaleString()}
                 </p>
 
                 <Button
@@ -258,10 +307,9 @@ export default function Send() {
                 
                 <div className="text-center mb-6">
                   <Avatar className="w-16 h-16 mx-auto mb-3">
-                    <AvatarImage src={selectedUser?.avatar} />
-                    <AvatarFallback>{selectedUser?.name[0]}</AvatarFallback>
+                    <AvatarFallback>{selectedUser?.full_name[0]}</AvatarFallback>
                   </Avatar>
-                  <p className="font-semibold">{selectedUser?.name}</p>
+                  <p className="font-semibold">{selectedUser?.full_name}</p>
                 </div>
 
                 <div className="space-y-3 p-4 bg-muted/50 rounded-xl mb-6">
@@ -329,7 +377,7 @@ export default function Send() {
               >
                 <h2 className="text-2xl font-bold mb-2">Transfer Successful!</h2>
                 <p className="text-muted-foreground mb-2">
-                  ₦{parseFloat(amount).toLocaleString()} sent to {selectedUser?.name}
+                  ₦{parseFloat(amount).toLocaleString()} sent to {selectedUser?.full_name}
                 </p>
                 {note && (
                   <p className="text-sm text-muted-foreground">"{note}"</p>
