@@ -35,7 +35,13 @@ export default function Settings() {
     document.documentElement.classList.toggle('dark', settings.darkMode);
   }, [settings.darkMode]);
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="min-h-screen pb-20 flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   const handleLogout = () => {
     logout();

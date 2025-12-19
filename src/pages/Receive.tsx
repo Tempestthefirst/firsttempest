@@ -11,7 +11,13 @@ import { toast } from 'sonner';
 export default function Receive() {
   const { user } = useStore();
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="min-h-screen pb-24 bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);

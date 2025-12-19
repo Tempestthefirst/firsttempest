@@ -58,7 +58,13 @@ export default function HourGlass() {
     return () => clearInterval(interval);
   }, [processHourGlassDeductions]);
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="min-h-screen pb-24 bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   const activePlans = hourGlassPlans.filter(p => p.status === 'active' || p.status === 'paused');
   const completedPlans = hourGlassPlans.filter(p => p.status === 'completed');

@@ -16,7 +16,13 @@ export default function Profile() {
   const { isAdmin } = useAdminRole();
   const navigate = useNavigate();
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="min-h-screen pb-20 flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   const myRooms = rooms.filter((room) =>
     room.contributors.some((c) => c.name === user.name)
