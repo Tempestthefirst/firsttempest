@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useStore } from '@/store/useStore';
+import { useTransactions } from '@/hooks/useTransactions';
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
 import { BottomNav } from '@/components/BottomNav';
@@ -10,13 +9,19 @@ import { TransactionSkeleton } from '@/components/ui/skeleton';
 import { Receipt } from 'lucide-react';
 
 export default function Transactions() {
-  const { transactions } = useStore();
-  const [isLoading, setIsLoading] = useState(true);
+  const { transactions, loading: isLoading } = useTransactions();
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
+  // Transform DB transactions to match TransactionCard format
+  const formattedTransactions = transactions.map(tx => ({
+    id: tx.id,
+    type: tx.type as 'send' | 'receive' | 'topup' | 'room-contribution' | 'room-unlock' | 'transfer' | 'settlement' | 'hourglass-deduction',
+    amount: tx.type === 'send' || tx.type === 'transfer' || tx.type === 'room_contribution' 
+      ? -Number(tx.amount) 
+      : Number(tx.amount),
+    description: tx.description || tx.type,
+    date: new Date(tx.created_at),
+    status: tx.status as 'pending' | 'confirmed' | 'refunded',
+  }));
 
   return (
     <div className="min-h-screen pb-20">
@@ -50,7 +55,7 @@ export default function Transactions() {
                 <TransactionSkeleton />
                 <TransactionSkeleton />
               </>
-            ) : transactions.length === 0 ? (
+            ) : formattedTransactions.length === 0 ? (
               <Card className="p-12 text-center border-0">
                 <Receipt className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">No transactions yet</h3>
@@ -59,7 +64,7 @@ export default function Transactions() {
                 </p>
               </Card>
             ) : (
-              transactions.map((transaction, index) => (
+              formattedTransactions.map((transaction, index) => (
                 <motion.div
                   key={transaction.id}
                   initial={{ opacity: 0, y: 20 }}

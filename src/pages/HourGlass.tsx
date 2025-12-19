@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore, HourGlassPlan } from '@/store/useStore';
+import { useProfile } from '@/hooks/useProfile';
+import { useWallet } from '@/hooks/useWallet';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { Card } from '@/components/ui/card';
@@ -38,7 +40,9 @@ import { toast } from 'sonner';
 import { format, differenceInDays } from 'date-fns';
 
 export default function HourGlass() {
-  const { user, hourGlassPlans, createHourGlassPlan, pauseHourGlassPlan, resumeHourGlassPlan, cancelHourGlassPlan, processHourGlassDeductions } = useStore();
+  const { hourGlassPlans, createHourGlassPlan, pauseHourGlassPlan, resumeHourGlassPlan, cancelHourGlassPlan, processHourGlassDeductions } = useStore();
+  const { profile, loading: profileLoading } = useProfile();
+  const { wallet, loading: walletLoading } = useWallet();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -58,7 +62,10 @@ export default function HourGlass() {
     return () => clearInterval(interval);
   }, [processHourGlassDeductions]);
 
-  if (!user) {
+  const isPageLoading = profileLoading || walletLoading;
+  const balance = wallet?.balance ?? 0;
+
+  if (isPageLoading) {
     return (
       <div className="min-h-screen pb-24 bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
@@ -91,7 +98,7 @@ export default function HourGlass() {
       toast.error('Please enter a valid deduction amount');
       return;
     }
-    if (deductionNum > user.balance) {
+    if (deductionNum > balance) {
       toast.error('Insufficient balance for first deduction');
       return;
     }
@@ -241,7 +248,7 @@ export default function HourGlass() {
                     inputMode="numeric"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Available: ₦{user.balance.toLocaleString()}
+                    Available: ₦{balance.toLocaleString()}
                   </p>
                 </div>
 

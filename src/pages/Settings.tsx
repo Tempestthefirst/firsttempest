@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
+import { useProfile } from '@/hooks/useProfile';
+import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
 import { BottomNav } from '@/components/BottomNav';
@@ -20,11 +22,11 @@ import {
 } from '@/components/ui/dialog';
 
 export default function Settings() {
-  const { user, settings, updateSettings, seedDemo, clearData, logout } = useStore();
+  const { settings, updateSettings, seedDemo, clearData, logout } = useStore();
+  const { profile, loading: profileLoading } = useProfile();
   const navigate = useNavigate();
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [isDevMode] = useState(() => {
-    // Simple check - in production you might use env vars
     return window.location.hostname === 'localhost' || 
            window.location.hostname.includes('lovable.app') ||
            window.location.hostname.includes('lovableproject.com');
@@ -35,24 +37,16 @@ export default function Settings() {
     document.documentElement.classList.toggle('dark', settings.darkMode);
   }, [settings.darkMode]);
 
-  if (!user) {
-    return (
-      <div className="min-h-screen pb-20 flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
-
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     logout();
     clearData();
     toast.success('Logged out successfully');
-    navigate('/');
+    navigate('/auth/login');
   };
 
   const handleSeedDemo = async () => {
     try {
-      // Call the seed function from store
       seedDemo();
       toast.success('Demo data loaded! Check your dashboard.');
     } catch (error) {
@@ -64,7 +58,7 @@ export default function Settings() {
     clearData();
     setShowClearDialog(false);
     toast.success('All data cleared');
-    window.location.href = '/';
+    window.location.href = '/auth/login';
   };
 
   const handleDarkModeToggle = (checked: boolean) => {
@@ -72,6 +66,14 @@ export default function Settings() {
     document.documentElement.classList.toggle('dark', checked);
     toast.success(checked ? 'Dark mode enabled' : 'Light mode enabled');
   };
+
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen pb-20 flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-20">
@@ -106,13 +108,13 @@ export default function Settings() {
               <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl hover:bg-muted transition-colors cursor-pointer">
                 <div>
                   <p className="font-semibold">Name</p>
-                  <p className="text-sm text-muted-foreground">{user?.name || 'Not set'}</p>
+                  <p className="text-sm text-muted-foreground">{profile?.full_name || 'Not set'}</p>
                 </div>
               </div>
               <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl hover:bg-muted transition-colors cursor-pointer">
                 <div>
-                  <p className="font-semibold">Account ID</p>
-                  <p className="text-sm text-muted-foreground">{user?.id || 'N/A'}</p>
+                  <p className="font-semibold">Phone</p>
+                  <p className="text-sm text-muted-foreground">{profile?.phone_number || 'N/A'}</p>
                 </div>
               </div>
             </div>
