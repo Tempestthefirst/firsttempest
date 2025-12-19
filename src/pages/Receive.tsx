@@ -1,23 +1,19 @@
 import { motion } from 'framer-motion';
-import { useStore } from '@/store/useStore';
+import { useProfile } from '@/hooks/useProfile';
+import { useWallet } from '@/hooks/useWallet';
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/BackButton';
 import { BottomNav } from '@/components/BottomNav';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowDownToLine, Copy, Share2 } from 'lucide-react';
+import { Copy, Building2, ArrowDownToLine, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Receive() {
-  const { user } = useStore();
+  const { profile, loading: profileLoading } = useProfile();
+  const { wallet, loading: walletLoading } = useWallet();
 
-  if (!user) {
-    return (
-      <div className="min-h-screen pb-24 bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
+  const isPageLoading = profileLoading || walletLoading;
 
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -25,15 +21,32 @@ export default function Receive() {
   };
 
   const handleShare = () => {
+    const accountNumber = wallet?.virtual_account_number || '0012345678';
+    const bankName = wallet?.virtual_account_bank || 'FirstPay';
+    const name = profile?.full_name || 'User';
+    
     if (navigator.share) {
       navigator.share({
         title: 'Send me money on SplitSpace',
-        text: `Send money to ${user.name}\nUser ID: ${user.id}\nAccount: ${user.virtualAccountNumber || '0012345678'}\nBank: ${user.virtualAccountBank || 'SplitSpace Bank'}`,
+        text: `Send money to ${name}\nAccount: ${accountNumber}\nBank: ${bankName}`,
       });
     } else {
-      handleCopy(user.id, 'User ID');
+      handleCopy(accountNumber, 'Account number');
     }
   };
+
+  if (isPageLoading) {
+    return (
+      <div className="min-h-screen pb-24 bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  const name = profile?.full_name || 'User';
+  const initials = name[0]?.toUpperCase() || 'U';
+  const accountNumber = wallet?.virtual_account_number || '0012345678';
+  const bankName = wallet?.virtual_account_bank || 'FirstPay';
 
   return (
     <div className="min-h-screen pb-24 bg-background">
@@ -68,26 +81,12 @@ export default function Receive() {
                 className="w-24 h-24 mx-auto rounded-full bg-foreground flex items-center justify-center mb-4"
               >
                 <span className="text-4xl font-bold text-background">
-                  {user.name[0].toUpperCase()}
+                  {initials}
                 </span>
               </motion.div>
 
-              <h2 className="text-xl font-bold mb-1">{user.name}</h2>
-              <p className="text-sm text-muted-foreground mb-6">Share your User ID to receive</p>
-
-              <div className="p-4 bg-muted/50 rounded-xl mb-4">
-                <p className="text-xs text-muted-foreground mb-1">User ID</p>
-                <div className="flex items-center justify-center gap-2">
-                  <p className="text-2xl font-mono font-bold">{user.id}</p>
-                  <button
-                    onClick={() => handleCopy(user.id, 'User ID')}
-                    className="p-2 rounded-lg hover:bg-muted transition-colors"
-                    aria-label="Copy user ID"
-                  >
-                    <Copy className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
+              <h2 className="text-xl font-bold mb-1">{name}</h2>
+              <p className="text-sm text-muted-foreground mb-6">Share your account details to receive</p>
             </div>
           </Card>
 
@@ -99,24 +98,24 @@ export default function Receive() {
               <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
                 <div>
                   <p className="text-xs text-muted-foreground">Bank</p>
-                  <p className="font-medium">{user.virtualAccountBank || 'SplitSpace Bank'}</p>
+                  <p className="font-medium">{bankName}</p>
                 </div>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
                 <div>
                   <p className="text-xs text-muted-foreground">Account Name</p>
-                  <p className="font-medium">{user.name}</p>
+                  <p className="font-medium">{name}</p>
                 </div>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
                 <div>
                   <p className="text-xs text-muted-foreground">Account Number</p>
-                  <p className="font-mono font-bold text-lg">{user.virtualAccountNumber || '0012345678'}</p>
+                  <p className="font-mono font-bold text-lg">{accountNumber}</p>
                 </div>
                 <button
-                  onClick={() => handleCopy(user.virtualAccountNumber || '0012345678', 'Account number')}
+                  onClick={() => handleCopy(accountNumber, 'Account number')}
                   className="p-2 rounded-lg hover:bg-muted transition-colors"
                   aria-label="Copy account number"
                 >
@@ -127,7 +126,7 @@ export default function Receive() {
 
             <div className="flex gap-3 mt-6">
               <Button
-                onClick={() => handleCopy(`${user.virtualAccountNumber || '0012345678'} - ${user.name} - ${user.virtualAccountBank || 'SplitSpace Bank'}`, 'Details')}
+                onClick={() => handleCopy(`${accountNumber} - ${name} - ${bankName}`, 'Details')}
                 variant="outline"
                 className="flex-1 h-12"
               >

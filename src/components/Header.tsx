@@ -1,18 +1,22 @@
 import { motion } from 'framer-motion';
-import { useStore } from '@/store/useStore';
+import { useProfile } from '@/hooks/useProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { useNavigate } from 'react-router-dom';
 
 export const Header = () => {
-  const { user } = useStore();
+  const { profile, loading } = useProfile();
   const navigate = useNavigate();
 
-  if (!user) {
+  // Show minimal header while loading
+  if (loading || !profile) {
     return (
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border h-14" />
     );
   }
+
+  const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.full_name}`;
+  const initials = profile.full_name?.[0]?.toUpperCase() || 'U';
 
   return (
     <motion.header
@@ -31,14 +35,14 @@ export const Header = () => {
             aria-label="Go to profile"
           >
             <Avatar className="w-9 h-9 ring-2 ring-border">
-              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarImage src={avatarUrl} alt={profile.full_name} />
               <AvatarFallback className="bg-foreground text-background text-sm font-bold">
-                {user.name[0].toUpperCase()}
+                {initials}
               </AvatarFallback>
             </Avatar>
             <div>
               <p className="text-xs text-muted-foreground">Welcome back,</p>
-              <p className="text-sm font-semibold">{user.name}</p>
+              <p className="text-sm font-semibold">{profile.full_name}</p>
             </div>
           </motion.div>
 
