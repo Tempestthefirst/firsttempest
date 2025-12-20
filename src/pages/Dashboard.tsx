@@ -197,6 +197,11 @@ export default function Dashboard() {
             >
               {showBalance ? `₦${(wallet?.balance || 0).toLocaleString()}` : '₦••••••'}
             </motion.p>
+            {wallet?.pendingBalance && wallet.pendingBalance > 0 ? (
+              <p className="text-sm opacity-70 mt-1">
+                {showBalance ? `₦${wallet.pendingBalance.toLocaleString()} pending` : '••• pending'}
+              </p>
+            ) : null}
             <p className="text-sm opacity-50 mt-2">{profile?.full_name || 'Loading...'}</p>
           </Card>
         </motion.div>
