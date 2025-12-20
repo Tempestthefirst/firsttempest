@@ -17,17 +17,15 @@ import {
 import { 
   Send, 
   ArrowDownToLine, 
-  Plus, 
-  Hourglass, 
-  Users, 
+  Plus,
   Receipt,
   Eye,
   EyeOff,
   CreditCard,
   Building2,
   Copy,
-  CheckCircle2,
   Loader2,
+  CheckCircle2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
@@ -75,8 +73,6 @@ export default function Dashboard() {
     { icon: Send, label: 'Send', action: () => navigate('/send') },
     { icon: ArrowDownToLine, label: 'Receive', action: () => navigate('/receive') },
     { icon: Plus, label: 'Add Money', action: () => setIsAddMoneyOpen(true) },
-    { icon: Hourglass, label: 'HourGlass', action: () => navigate('/hourglass') },
-    { icon: Users, label: 'Rooms', action: () => navigate('/rooms') },
   ];
 
   const handleCardPayment = async (e: React.FormEvent) => {
