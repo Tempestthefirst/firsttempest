@@ -40,6 +40,11 @@ export function useProfile(): UseProfileResult {
       }
 
       setProfile(data);
+
+      // Update last login timestamp
+      if (data) {
+        supabase.rpc('update_last_login').then(() => {});
+      }
     } catch (err) {
       console.error('Error in useProfile:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');

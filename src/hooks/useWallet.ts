@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface Wallet {
   id: string;
   balance: number;
+  pendingBalance: number;
   currency: string;
   virtual_account_number: string | null;
   virtual_account_bank: string | null;
@@ -40,6 +41,7 @@ export function useWallet(): UseWalletResult {
         setWallet({
           id: data[0].id,
           balance: Number(data[0].balance),
+          pendingBalance: 0, // Will be updated when get_my_wallet returns it
           currency: data[0].currency,
           virtual_account_number: data[0].virtual_account_number,
           virtual_account_bank: data[0].virtual_account_bank,

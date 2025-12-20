@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          device_info: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          resource_id: string | null
+          resource_type: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          device_info?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          device_info?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      feature_flags: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          enabled: boolean | null
+          id: string
+          metadata: Json | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          id?: string
+          metadata?: Json | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          id?: string
+          metadata?: Json | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       hourglass_plans: {
         Row: {
           created_at: string
@@ -109,36 +175,57 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: Database["public"]["Enums"]["account_status"] | null
           created_at: string
+          daily_transfer_reset_at: string | null
+          daily_transfer_total: number | null
+          failed_pin_attempts: number | null
           full_name: string
           id: string
           identity_photo_url: string | null
           is_verified: boolean | null
+          last_login_at: string | null
           phone_number: string
           pin_hash: string | null
+          pin_locked_until: string | null
           pin_salt: string | null
+          profile_completeness: number | null
           updated_at: string
         }
         Insert: {
+          account_status?: Database["public"]["Enums"]["account_status"] | null
           created_at?: string
+          daily_transfer_reset_at?: string | null
+          daily_transfer_total?: number | null
+          failed_pin_attempts?: number | null
           full_name: string
           id: string
           identity_photo_url?: string | null
           is_verified?: boolean | null
+          last_login_at?: string | null
           phone_number: string
           pin_hash?: string | null
+          pin_locked_until?: string | null
           pin_salt?: string | null
+          profile_completeness?: number | null
           updated_at?: string
         }
         Update: {
+          account_status?: Database["public"]["Enums"]["account_status"] | null
           created_at?: string
+          daily_transfer_reset_at?: string | null
+          daily_transfer_total?: number | null
+          failed_pin_attempts?: number | null
           full_name?: string
           id?: string
           identity_photo_url?: string | null
           is_verified?: boolean | null
+          last_login_at?: string | null
           phone_number?: string
           pin_hash?: string | null
+          pin_locked_until?: string | null
           pin_salt?: string | null
+          profile_completeness?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -214,13 +301,51 @@ export type Database = {
           },
         ]
       }
+      transaction_limits: {
+        Row: {
+          created_at: string | null
+          daily_limit: number
+          description: string | null
+          id: string
+          min_transaction: number
+          name: string
+          per_transaction_limit: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          daily_limit?: number
+          description?: string | null
+          id?: string
+          min_transaction?: number
+          name: string
+          per_transaction_limit?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          daily_limit?: number
+          description?: string | null
+          id?: string
+          min_transaction?: number
+          name?: string
+          per_transaction_limit?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
+          completed_at: string | null
           created_at: string
           description: string | null
+          device_info: string | null
+          failed_at: string | null
+          failure_reason: string | null
           from_user_id: string | null
           id: string
+          ip_address: string | null
           metadata: Json | null
           reference: string | null
           room_id: string | null
@@ -230,10 +355,15 @@ export type Database = {
         }
         Insert: {
           amount: number
+          completed_at?: string | null
           created_at?: string
           description?: string | null
+          device_info?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
           from_user_id?: string | null
           id?: string
+          ip_address?: string | null
           metadata?: Json | null
           reference?: string | null
           room_id?: string | null
@@ -243,10 +373,15 @@ export type Database = {
         }
         Update: {
           amount?: number
+          completed_at?: string | null
           created_at?: string
           description?: string | null
+          device_info?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
           from_user_id?: string | null
           id?: string
+          ip_address?: string | null
           metadata?: Json | null
           reference?: string | null
           room_id?: string | null
@@ -283,6 +418,7 @@ export type Database = {
           created_at: string
           currency: string
           id: string
+          pending_balance: number | null
           updated_at: string
           user_id: string
           virtual_account_bank: string | null
@@ -293,6 +429,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          pending_balance?: number | null
           updated_at?: string
           user_id: string
           virtual_account_bank?: string | null
@@ -303,6 +440,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          pending_balance?: number | null
           updated_at?: string
           user_id?: string
           virtual_account_bank?: string | null
@@ -315,11 +453,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_profile_completeness: {
+        Args: { p_user_id: string }
+        Returns: number
+      }
       contribute_to_room: {
         Args: { p_amount: number; p_room_id: string }
         Returns: Json
       }
       generate_invite_code: { Args: never; Returns: string }
+      generate_transaction_reference: { Args: never; Returns: string }
       get_my_wallet: {
         Args: never
         Returns: {
@@ -337,7 +480,26 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_feature_enabled: { Args: { p_feature_name: string }; Returns: boolean }
       join_room_by_code: { Args: { p_invite_code: string }; Returns: Json }
+      log_activity: {
+        Args: {
+          p_action: string
+          p_metadata?: Json
+          p_resource_id?: string
+          p_resource_type?: string
+        }
+        Returns: string
+      }
+      reset_pin_secure: {
+        Args: {
+          p_new_pin_hash: string
+          p_new_pin_salt: string
+          p_old_pin_hash: string
+          p_phone: string
+        }
+        Returns: Json
+      }
       topup_wallet: {
         Args: { p_amount: number; p_reference?: string }
         Returns: Json
@@ -346,12 +508,24 @@ export type Database = {
         Args: { p_amount: number; p_description?: string; p_to_user_id: string }
         Returns: Json
       }
+      transfer_money_v2: {
+        Args: {
+          p_amount: number
+          p_description?: string
+          p_pin_hash?: string
+          p_to_user_id: string
+        }
+        Returns: Json
+      }
+      update_last_login: { Args: never; Returns: Json }
       verify_pin_for_password_reset: {
         Args: { p_phone: string; p_pin: string }
         Returns: Json
       }
+      verify_pin_with_limit: { Args: { p_pin_hash: string }; Returns: Json }
     }
     Enums: {
+      account_status: "active" | "suspended" | "pending_verification" | "locked"
       app_role: "admin" | "moderator" | "user"
       hourglass_recurrence: "daily" | "weekly" | "monthly"
       hourglass_status: "active" | "paused" | "completed" | "cancelled"
@@ -494,6 +668,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_status: ["active", "suspended", "pending_verification", "locked"],
       app_role: ["admin", "moderator", "user"],
       hourglass_recurrence: ["daily", "weekly", "monthly"],
       hourglass_status: ["active", "paused", "completed", "cancelled"],
