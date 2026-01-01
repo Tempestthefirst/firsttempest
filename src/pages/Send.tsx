@@ -3,13 +3,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useWallet } from '@/hooks/useWallet';
+import { useEnhancedTransfer } from '@/hooks/useEnhancedTransfer';
+import { useProfile } from '@/hooks/useProfile';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
+import { PinVerificationModal } from '@/components/PinVerificationModal';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send as SendIcon, Loader2, CheckCircle2, ArrowRight, Search, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
@@ -24,15 +27,18 @@ interface UserProfile {
 
 export default function Send() {
   const navigate = useNavigate();
-  const { wallet, transfer } = useWallet();
+  const { wallet } = useWallet();
+  const { transfer, isTransferring } = useEnhancedTransfer();
+  const { profile } = useProfile();
   const [step, setStep] = useState<Step>('recipient');
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [availableUsers, setAvailableUsers] = useState<UserProfile[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [transactionRef, setTransactionRef] = useState<string | null>(null);
 
   // Fetch users from database
   useEffect(() => {
@@ -69,8 +75,20 @@ export default function Send() {
     u.phone_number.includes(searchQuery)
   );
 
-  const handleSend = async () => {
+  const handleConfirmClick = () => {
+    // Check if user has PIN set up
+    if (profile?.pin_hash) {
+      setShowPinModal(true);
+    } else {
+      // No PIN set, proceed directly (for demo purposes)
+      handleSendWithPin(undefined);
+    }
+  };
+
+  const handleSendWithPin = async (pinHash?: string) => {
     if (!selectedUser || !wallet) return;
+    
+    setShowPinModal(false);
     
     const amountNum = parseFloat(amount);
     if (amountNum > wallet.balance) {
@@ -78,12 +96,30 @@ export default function Send() {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      // Use secure database RPC for transfer
-      const result = await transfer(selectedUser.id, amountNum, note || 'Money transfer');
+    const result = await transfer({
+      toUserId: selectedUser.id,
+      amount: amountNum,
+      description: note || 'Money transfer',
+      pin: pinHash ? undefined : undefined, // PIN already hashed
+    });
+    
+    // If we have a pinHash, we need to call with the hash directly
+    if (pinHash) {
+      const resultWithPin = await supabase.rpc('transfer_money_v2', {
+        p_to_user_id: selectedUser.id,
+        p_amount: amountNum,
+        p_description: note || 'Money transfer',
+        p_pin_hash: pinHash,
+      });
       
-      if (result.success) {
+      if (resultWithPin.error) {
+        toast.error('Transfer failed');
+        return;
+      }
+      
+      const data = resultWithPin.data as unknown as { success: boolean; error?: string; reference?: string };
+      if (data.success) {
+        setTransactionRef(data.reference || null);
         setStep('success');
         confetti({
           particleCount: 100,
@@ -92,12 +128,22 @@ export default function Send() {
           colors: ['#22c55e', '#16a34a', '#15803d'],
         });
       } else {
-        toast.error(result.error || 'Transfer failed');
+        toast.error(data.error || 'Transfer failed');
       }
-    } catch {
-      toast.error('Something went wrong');
-    } finally {
-      setIsLoading(false);
+      return;
+    }
+    
+    if (result.success) {
+      setTransactionRef(result.reference || null);
+      setStep('success');
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#22c55e', '#16a34a', '#15803d'],
+      });
+    } else {
+      toast.error(result.error || 'Transfer failed');
     }
   };
 
@@ -330,11 +376,11 @@ export default function Send() {
                 </div>
 
                 <Button
-                  onClick={handleSend}
-                  disabled={isLoading}
+                  onClick={handleConfirmClick}
+                  disabled={isTransferring}
                   className="w-full h-12 bg-success hover:bg-success/90 text-white font-semibold"
                 >
-                  {isLoading ? (
+                  {isTransferring ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                       Sending...
@@ -379,6 +425,11 @@ export default function Send() {
                 <p className="text-muted-foreground mb-2">
                   ₦{parseFloat(amount).toLocaleString()} sent to {selectedUser?.full_name}
                 </p>
+                {transactionRef && (
+                  <p className="text-xs text-muted-foreground font-mono mb-2">
+                    Ref: {transactionRef}
+                  </p>
+                )}
                 {note && (
                   <p className="text-sm text-muted-foreground">"{note}"</p>
                 )}
@@ -401,6 +452,14 @@ export default function Send() {
           )}
         </AnimatePresence>
       </div>
+
+      <PinVerificationModal
+        isOpen={showPinModal}
+        onClose={() => setShowPinModal(false)}
+        onSuccess={handleSendWithPin}
+        title="Confirm Transfer"
+        subtitle="Enter your PIN to send money"
+      />
 
       <BottomNav />
     </div>

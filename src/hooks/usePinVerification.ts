@@ -10,6 +10,7 @@ interface PinVerificationResult {
   attemptsRemaining?: number;
   lockedUntil?: string;
   minutesRemaining?: number;
+  pinHash?: string;
 }
 
 export function usePinVerification() {
@@ -46,6 +47,8 @@ export function usePinVerification() {
           }
         } else if (result.success) {
           setIsLocked(false);
+          // Return pinHash so caller can use it for transfers
+          return { ...result, pinHash };
           setLockExpiresAt(null);
         }
 

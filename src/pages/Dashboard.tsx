@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useWallet } from '@/hooks/useWallet';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useProfile } from '@/hooks/useProfile';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,7 @@ import {
   Copy,
   Loader2,
   CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
@@ -38,6 +40,8 @@ export default function Dashboard() {
   const { wallet, loading: walletLoading, topUp, refetch: refetchWallet } = useWallet();
   const { transactions, loading: txLoading } = useTransactions();
   const { profile } = useProfile();
+  const { isEnabled } = useFeatureFlags();
+  const isDemoMode = isEnabled('demo_mode');
   const navigate = useNavigate();
   const [showBalance, setShowBalance] = useState(true);
   const [isAddMoneyOpen, setIsAddMoneyOpen] = useState(false);
@@ -164,6 +168,20 @@ export default function Dashboard() {
       <Header />
 
       <div className="max-w-lg mx-auto px-4 pt-20">
+        {/* Demo Mode Banner */}
+        {isDemoMode && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 p-3 mb-4 bg-amber-500/10 border border-amber-500/20 rounded-xl"
+          >
+            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+            <p className="text-sm text-amber-700 dark:text-amber-400">
+              <strong>Demo Mode</strong> — Using simulated money for testing
+            </p>
+          </motion.div>
+        )}
+
         {/* Balance Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
