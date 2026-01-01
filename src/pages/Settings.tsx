@@ -8,7 +8,8 @@ import { BottomNav } from '@/components/BottomNav';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Settings as SettingsIcon, Bell, Lock, Palette, Database, User, LogOut, Info, Gauge, Trash2 } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Lock, Palette, Database, User, LogOut, Info, Gauge, Trash2, Shield } from 'lucide-react';
+import { ActivityLogSection } from '@/components/ActivityLogSection';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -269,6 +270,11 @@ export default function Settings() {
               </div>
             </div>
           </Card>
+
+          {/* Activity Log */}
+          <div className="mb-4">
+            <ActivityLogSection />
+          </div>
 
           {/* Account Actions */}
           <Card className="p-6 mb-4 border-0 shadow-sm" role="region" aria-label="Account actions">

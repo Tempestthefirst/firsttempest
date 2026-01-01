@@ -1,27 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-interface FeatureFlags {
-  hourglass: boolean;
-  money_rooms: boolean;
-  card_payments: boolean;
-  bank_transfers: boolean;
+import { Json } from '@/integrations/supabase/types';
+
+interface FeatureFlag {
+  name: string;
+  enabled: boolean;
+  metadata?: Json;
 }
 
 export function useFeatureFlags() {
-  const [flags, setFlags] = useState<FeatureFlags>({
-    hourglass: true,
-    money_rooms: true,
-    card_payments: true,
-    bank_transfers: true,
-  });
+  const [flags, setFlags] = useState<Record<string, boolean>>({});
+  const [metadata, setMetadata] = useState<Record<string, Json>>({});
   const [loading, setLoading] = useState(true);
 
   const fetchFlags = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('feature_flags')
-        .select('name, enabled');
+        .select('name, enabled, metadata');
 
       if (error) {
         console.error('Error fetching feature flags:', error);
@@ -29,13 +26,16 @@ export function useFeatureFlags() {
       }
 
       if (data) {
-        const flagMap: Partial<FeatureFlags> = {};
+        const flagMap: Record<string, boolean> = {};
+        const metaMap: Record<string, Json> = {};
         data.forEach((flag) => {
-          if (flag.name in flags) {
-            flagMap[flag.name as keyof FeatureFlags] = flag.enabled;
+          flagMap[flag.name] = flag.enabled ?? false;
+          if (flag.metadata) {
+            metaMap[flag.name] = flag.metadata;
           }
         });
-        setFlags((prev) => ({ ...prev, ...flagMap }));
+        setFlags(flagMap);
+        setMetadata(metaMap);
       }
     } catch (err) {
       console.error('Error fetching feature flags:', err);
@@ -49,11 +49,18 @@ export function useFeatureFlags() {
   }, [fetchFlags]);
 
   const isEnabled = useCallback(
-    (featureName: keyof FeatureFlags): boolean => {
+    (featureName: string): boolean => {
       return flags[featureName] ?? false;
     },
     [flags]
   );
 
-  return { flags, loading, isEnabled, refetch: fetchFlags };
+  const getMetadata = useCallback(
+    (featureName: string): Json | undefined => {
+      return metadata[featureName];
+    },
+    [metadata]
+  );
+
+  return { flags, loading, isEnabled, getMetadata, refetch: fetchFlags };
 }

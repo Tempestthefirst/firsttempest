@@ -20,16 +20,14 @@ const allNavItems: NavItem[] = [
 ];
 
 export const BottomNav = () => {
-  const { flags, loading } = useFeatureFlags();
+  const { isEnabled, loading } = useFeatureFlags();
 
   const navItems = useMemo(() => {
     return allNavItems.filter((item) => {
       if (!item.featureFlag) return true;
-      if (item.featureFlag === 'hourglass') return flags.hourglass;
-      if (item.featureFlag === 'money_rooms') return flags.money_rooms;
-      return true;
+      return isEnabled(item.featureFlag);
     });
-  }, [flags]);
+  }, [isEnabled]);
 
   const gridCols = navItems.length <= 3 ? 'grid-cols-3' : navItems.length === 4 ? 'grid-cols-4' : 'grid-cols-5';
 
