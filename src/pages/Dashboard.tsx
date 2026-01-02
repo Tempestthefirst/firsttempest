@@ -226,28 +226,28 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <motion.div
-          className="mt-6 overflow-x-auto scrollbar-hide"
+          className="mt-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <div className="flex gap-3 min-w-max px-1 pb-2">
+          <div className="grid grid-cols-3 gap-3">
             {quickActions.map((action, index) => (
               <motion.button
                 key={action.label}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05, type: 'spring' }}
-                whileHover={{ scale: 1.05, y: -2 }}
+                transition={{ delay: index * 0.08, type: 'spring', stiffness: 300 }}
+                whileHover={{ scale: 1.05, y: -4 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={action.action}
-                className="flex flex-col items-center gap-2 p-4 bg-card border border-border rounded-2xl min-w-[72px] shadow-banking hover:shadow-banking-lg transition-all focus:outline-none focus:ring-2 focus:ring-ring"
+                className="flex flex-col items-center gap-3 p-5 bg-card border border-border rounded-2xl shadow-banking hover:shadow-banking-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring"
                 aria-label={action.label}
               >
-                <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center">
-                  <action.icon className="w-5 h-5 text-foreground" strokeWidth={2} />
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <action.icon className="w-6 h-6 text-primary" strokeWidth={2} />
                 </div>
-                <span className="text-xs font-medium text-foreground">{action.label}</span>
+                <span className="text-sm font-semibold text-foreground">{action.label}</span>
               </motion.button>
             ))}
           </div>

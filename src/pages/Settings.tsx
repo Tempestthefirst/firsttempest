@@ -8,7 +8,8 @@ import { BottomNav } from '@/components/BottomNav';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Settings as SettingsIcon, Bell, Lock, Palette, Database, User, LogOut, Info, Gauge, Trash2, Shield } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Settings as SettingsIcon, Bell, Lock, Palette, Database, User, LogOut, Info, Gauge, Trash2, Shield, Camera } from 'lucide-react';
 import { ActivityLogSection } from '@/components/ActivityLogSection';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
@@ -105,19 +106,68 @@ export default function Settings() {
               <User className="w-5 h-5 text-primary" />
               <h2 className="text-lg font-bold">Profile</h2>
             </div>
+            
+            {/* Profile Picture */}
+            <motion.div 
+              className="flex flex-col items-center mb-6"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 200 }}
+            >
+              <div className="relative">
+                <Avatar className="w-24 h-24 border-4 border-primary/20">
+                  {profile?.identity_photo_url ? (
+                    <AvatarImage 
+                      src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/identity-photos/${profile.identity_photo_url}`} 
+                      alt={profile.full_name}
+                    />
+                  ) : null}
+                  <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">
+                    {profile?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <motion.div 
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-lg cursor-pointer"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Camera className="w-4 h-4 text-primary-foreground" />
+                </motion.div>
+              </div>
+              <p className="mt-3 text-lg font-semibold">{profile?.full_name || 'User'}</p>
+              <p className="text-sm text-muted-foreground">{profile?.phone_number}</p>
+            </motion.div>
+
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl hover:bg-muted transition-colors cursor-pointer">
+              <motion.div 
+                className="flex items-center justify-between p-4 bg-muted/50 rounded-xl hover:bg-muted transition-all cursor-pointer"
+                whileHover={{ x: 4 }}
+              >
                 <div>
                   <p className="font-semibold">Name</p>
                   <p className="text-sm text-muted-foreground">{profile?.full_name || 'Not set'}</p>
                 </div>
-              </div>
-              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl hover:bg-muted transition-colors cursor-pointer">
+              </motion.div>
+              <motion.div 
+                className="flex items-center justify-between p-4 bg-muted/50 rounded-xl hover:bg-muted transition-all cursor-pointer"
+                whileHover={{ x: 4 }}
+              >
                 <div>
                   <p className="font-semibold">Phone</p>
                   <p className="text-sm text-muted-foreground">{profile?.phone_number || 'N/A'}</p>
                 </div>
-              </div>
+              </motion.div>
+              <motion.div 
+                className="flex items-center justify-between p-4 bg-muted/50 rounded-xl hover:bg-muted transition-all cursor-pointer"
+                whileHover={{ x: 4 }}
+              >
+                <div>
+                  <p className="font-semibold">Verification Status</p>
+                  <p className={`text-sm ${profile?.is_verified ? 'text-green-600' : 'text-amber-600'}`}>
+                    {profile?.is_verified ? 'Verified' : 'Pending Verification'}
+                  </p>
+                </div>
+              </motion.div>
             </div>
           </Card>
 
