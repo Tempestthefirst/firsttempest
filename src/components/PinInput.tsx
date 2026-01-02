@@ -17,7 +17,7 @@ interface PinInputProps {
 }
 
 export function PinInput({
-  length = 4,
+  length = 6,
   onComplete,
   error,
   attemptsRemaining,
@@ -25,7 +25,7 @@ export function PinInput({
   lockTimeRemaining,
   disabled = false,
   title = 'Enter PIN',
-  subtitle = 'Enter your 4-digit PIN to continue',
+  subtitle = 'Enter your 6-digit PIN to continue',
 }: PinInputProps) {
   const [pin, setPin] = useState<string[]>(new Array(length).fill(''));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -128,7 +128,7 @@ export function PinInput({
         </motion.div>
       ) : (
         <>
-          <div className="flex gap-3 mb-4" onPaste={handlePaste}>
+          <div className="flex gap-2 mb-4 justify-center" onPaste={handlePaste}>
             {pin.map((digit, index) => (
               <motion.div
                 key={index}
@@ -146,7 +146,7 @@ export function PinInput({
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   disabled={disabled || isLocked}
                   className={cn(
-                    'w-14 h-14 text-center text-2xl font-bold',
+                    'w-11 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold',
                     'border-2 rounded-xl transition-all',
                     digit ? 'border-primary bg-primary/5' : 'border-border',
                     error && 'border-destructive bg-destructive/5 animate-shake'

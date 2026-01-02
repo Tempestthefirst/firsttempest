@@ -71,12 +71,18 @@ export default function MoneyRooms() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast.error('Please log in to create a room');
+        setIsCreating(false);
         return;
       }
 
       // Generate invite code using database function
       const { data: inviteCode, error: codeError } = await supabase.rpc('generate_invite_code');
-      if (codeError) throw codeError;
+      if (codeError) {
+        console.error('Error generating invite code:', codeError);
+        toast.error('Failed to generate room code');
+        setIsCreating(false);
+        return;
+      }
 
       // Insert room into database
       const { data: room, error: roomError } = await supabase
@@ -92,7 +98,12 @@ export default function MoneyRooms() {
         .select()
         .single();
 
-      if (roomError) throw roomError;
+      if (roomError) {
+        console.error('Error creating room:', roomError);
+        toast.error(`Failed to create room: ${roomError.message}`);
+        setIsCreating(false);
+        return;
+      }
 
       // Add creator as first member
       const { error: memberError } = await supabase
@@ -102,17 +113,29 @@ export default function MoneyRooms() {
           user_id: user.id,
         });
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error('Error adding member:', memberError);
+      }
 
-      toast.success(`Room "${roomName}" created! Code: ${inviteCode}`);
+      // Show success with invite code prominently
+      toast.success(
+        <div className="flex flex-col gap-1">
+          <span className="font-semibold">Room created successfully!</span>
+          <span className="text-xs">Invite Code: <span className="font-mono font-bold">{inviteCode}</span></span>
+        </div>,
+        { duration: 8000 }
+      );
+      
       setRoomName('');
       setTargetAmount('');
       setUnlockDate('');
-      setActiveTab('my-rooms');
-      refetch();
+      await refetch();
+      
+      // Navigate to the new room
+      navigate(`/rooms/${room.id}`);
     } catch (err) {
       console.error('Error creating room:', err);
-      toast.error('Failed to create room');
+      toast.error('Failed to create room. Please try again.');
     } finally {
       setIsCreating(false);
     }

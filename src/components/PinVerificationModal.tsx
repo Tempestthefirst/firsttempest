@@ -18,7 +18,7 @@ export function PinVerificationModal({
   onClose,
   onSuccess,
   title = 'Enter PIN',
-  subtitle = 'Enter your 4-digit PIN to confirm',
+  subtitle = 'Enter your 6-digit PIN to confirm',
 }: PinVerificationModalProps) {
   const { verifyPin, isVerifying, isLocked, getRemainingLockTime } = usePinVerification();
   const [error, setError] = useState<string | undefined>();
@@ -74,6 +74,7 @@ export function PinVerificationModal({
             </div>
           ) : (
             <PinInput
+              length={6}
               onComplete={handlePinComplete}
               error={error}
               attemptsRemaining={attemptsRemaining}
